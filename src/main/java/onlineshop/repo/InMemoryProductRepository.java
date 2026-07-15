@@ -2,6 +2,8 @@ package onlineshop.repo;
 
 import lombok.NonNull;
 import onlineshop.domain.product.Product;
+import onlineshop.exception.ProductAlreadyExistsException;
+import onlineshop.exception.ProductNotFoundException;
 
 import java.util.*;
 
@@ -11,7 +13,7 @@ public class InMemoryProductRepository implements ProductRepository {
     @Override
     public void add(@NonNull Product product) {
         if (productsRepo.putIfAbsent(product.getId(), product) != null) {
-            throw new IllegalArgumentException("Product with id " + product.getId() + " already exists");
+            throw new ProductAlreadyExistsException(product.getId());
         }
 
         System.out.println("Product: " + product + " has been added to repository");
@@ -27,7 +29,7 @@ public class InMemoryProductRepository implements ProductRepository {
         if (!product.getId().equals(id)) throw new IllegalArgumentException("Product ids do not match");
 
         if (productsRepo.replace(id, product) == null) {
-            throw new NoSuchElementException("Product with id " + id + " does not exist");
+            throw new ProductNotFoundException(id);
         }
     }
 

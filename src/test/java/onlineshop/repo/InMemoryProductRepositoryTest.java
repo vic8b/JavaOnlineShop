@@ -2,11 +2,12 @@ package onlineshop.repo;
 
 import onlineshop.domain.product.Computer;
 import onlineshop.domain.product.Smartphone;
+import onlineshop.exception.ProductAlreadyExistsException;
+import onlineshop.exception.ProductNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -65,7 +66,7 @@ class InMemoryProductRepositoryTest {
 
         repository.add(computer);
 
-        assertThatExceptionOfType(IllegalArgumentException.class)
+        assertThatExceptionOfType(ProductAlreadyExistsException.class)
                 .isThrownBy(() -> repository.add(testDuplicate));
 
         assertThatThrownBy(() -> repository.add(testDuplicate))
@@ -127,11 +128,11 @@ class InMemoryProductRepositoryTest {
 
     @Test
     void shouldThrowExceptionWhenChangingSpecificationOfNonExistingId() {
-        assertThatExceptionOfType(NoSuchElementException.class)
+        assertThatExceptionOfType(ProductNotFoundException.class)
                 .isThrownBy(() -> repository.changeSpecification("1", computer));
 
         assertThatThrownBy(() -> repository.changeSpecification("1", computer))
-                .hasMessage("Product with id 1 does not exist");
+                .hasMessage("Product with id 1 not found");
     }
 
     @Test
