@@ -96,4 +96,63 @@ class ElectronicsTest {
         assertThat(testElectronics)
                 .isEqualTo(testElectronics2);
     }
+
+    @Test
+    void shouldSuccessfullyIncreaseQuantity() {
+        Electronics testElectronics = Electronics.builder()
+                .id("1")
+                .name("testSmartphone")
+                .price(new BigDecimal("10"))
+                .quantity(1)
+                .build();
+
+        testElectronics.increaseQuantity(1);
+
+        assertThat(testElectronics.getQuantity())
+                .isEqualTo(2);
+    }
+
+    @Test
+    void shouldSuccessfullyDecreaseQuantity() {
+        Electronics testElectronics = Electronics.builder()
+                .id("1")
+                .name("testSmartphone")
+                .price(new BigDecimal("10"))
+                .quantity(1)
+                .build();
+
+        testElectronics.decreaseQuantity(1);
+
+        assertThat(testElectronics.getQuantity())
+                .isEqualTo(0);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAmountIsNegative() {
+        Electronics testElectronics = Electronics.builder()
+                .id("1")
+                .name("testSmartphone")
+                .price(new BigDecimal("10"))
+                .quantity(1)
+                .build();
+
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> testElectronics.increaseQuantity(-1));
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> testElectronics.decreaseQuantity(-1));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDecreasingAmountExceedsQuantityOfProduct() {
+        Electronics testElectronics = Electronics.builder()
+                .id("1")
+                .name("testSmartphone")
+                .price(new BigDecimal("10"))
+                .quantity(1)
+                .build();
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> testElectronics.decreaseQuantity(-10));
+    }
 }

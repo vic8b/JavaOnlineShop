@@ -116,4 +116,71 @@ class ComputerTest {
         assertThat(testComputer)
                 .isEqualTo(testComputer2);
     }
+
+    @Test
+    void shouldSuccessfullyIncreaseQuantity() {
+        Computer testComputer = Computer.builder()
+                .id("1")
+                .name("testComputer")
+                .price(new BigDecimal("10"))
+                .quantity(1)
+                .cpu("Intel")
+                .ram("64 GB")
+                .build();
+
+        testComputer.increaseQuantity(1);
+
+        assertThat(testComputer.getQuantity())
+                .isEqualTo(2);
+    }
+
+    @Test
+    void shouldSuccessfullyDecreaseQuantity() {
+        Computer testComputer = Computer.builder()
+                .id("1")
+                .name("testComputer")
+                .price(new BigDecimal("10"))
+                .quantity(1)
+                .cpu("Intel")
+                .ram("64 GB")
+                .build();
+
+        testComputer.decreaseQuantity(1);
+
+        assertThat(testComputer.getQuantity())
+                .isEqualTo(0);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAmountIsNegative() {
+        Computer testComputer = Computer.builder()
+                .id("1")
+                .name("testComputer")
+                .price(new BigDecimal("10"))
+                .quantity(1)
+                .cpu("Intel")
+                .ram("64 GB")
+                .build();
+
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> testComputer.increaseQuantity(-1));
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> testComputer.decreaseQuantity(-1));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDecreasingAmountExceedsQuantityOfProduct() {
+        Computer testComputer = Computer.builder()
+                .id("1")
+                .name("testComputer")
+                .price(new BigDecimal("10"))
+                .quantity(1)
+                .cpu("Intel")
+                .ram("64 GB")
+                .build();
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> testComputer.decreaseQuantity(-10));
+    }
 }

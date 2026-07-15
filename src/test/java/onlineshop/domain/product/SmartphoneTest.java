@@ -144,4 +144,79 @@ class SmartphoneTest {
         assertThat(testSmartphone)
                 .isEqualTo(testSmartphone2);
     }
+
+    @Test
+    void shouldSuccessfullyIncreaseQuantity() {
+        Smartphone testSmartphone = Smartphone.builder()
+                .id("1")
+                .name("testSmartphone")
+                .price(new BigDecimal("10"))
+                .quantity(1)
+                .color("yellow")
+                .batteryCapacity("1050 mAh")
+                .accessory("case")
+                .accessory("charger")
+                .build();
+
+        testSmartphone.increaseQuantity(1);
+
+        assertThat(testSmartphone.getQuantity())
+                .isEqualTo(2);
+    }
+
+    @Test
+    void shouldSuccessfullyDecreaseQuantity() {
+        Smartphone testSmartphone = Smartphone.builder()
+                .id("1")
+                .name("testSmartphone")
+                .price(new BigDecimal("10"))
+                .quantity(1)
+                .color("yellow")
+                .batteryCapacity("1050 mAh")
+                .accessory("case")
+                .accessory("charger")
+                .build();
+
+        testSmartphone.decreaseQuantity(1);
+
+        assertThat(testSmartphone.getQuantity())
+                .isEqualTo(0);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAmountIsNegative() {
+        Smartphone testSmartphone = Smartphone.builder()
+                .id("1")
+                .name("testSmartphone")
+                .price(new BigDecimal("10"))
+                .quantity(1)
+                .color("yellow")
+                .batteryCapacity("1050 mAh")
+                .accessory("case")
+                .accessory("charger")
+                .build();
+
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> testSmartphone.increaseQuantity(-1));
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> testSmartphone.decreaseQuantity(-1));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDecreasingAmountExceedsQuantityOfProduct() {
+        Smartphone testSmartphone = Smartphone.builder()
+                .id("1")
+                .name("testSmartphone")
+                .price(new BigDecimal("10"))
+                .quantity(1)
+                .color("yellow")
+                .batteryCapacity("1050 mAh")
+                .accessory("case")
+                .accessory("charger")
+                .build();
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> testSmartphone.decreaseQuantity(-10));
+    }
 }
