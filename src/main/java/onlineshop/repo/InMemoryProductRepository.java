@@ -40,6 +40,6 @@ public class InMemoryProductRepository implements ProductRepository {
 
     @Override
     public List<Product> findAll() {
-        return List.copyOf(productsRepo.values().stream().toList());
+        return List.copyOf(productsRepo.values());
     }
 }
