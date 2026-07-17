@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 
@@ -147,6 +148,35 @@ class ProductManagerTest {
         //Assert
         assertThat(testComputer.getQuantity())
                 .isEqualTo(0);
+        verify(productRepository).findById("1");
+    }
+
+    @Test
+    void shouldChangeProductPrice() {
+        //Arrange
+        BigDecimal newPrice = new BigDecimal("5");
+        when(productRepository.findById("1"))
+                .thenReturn(Optional.of(testComputer));
+
+        //Act
+        productManager.changePrice("1", newPrice);
+
+        //Assert
+        assertThat(testComputer.getPrice())
+                .isEqualTo(newPrice.setScale(2, RoundingMode.HALF_UP));
+        verify(productRepository).findById("1");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenNewPriceIsNotPositive() {
+        //Arrange
+        BigDecimal newPrice = new BigDecimal("-10");
+        when(productRepository.findById("1"))
+                .thenReturn(Optional.of(testComputer));
+
+        //Act + Assert
+        assertThatThrownBy(() -> productManager.changePrice("1", newPrice))
+                .hasMessage("Update price must be positive");
         verify(productRepository).findById("1");
     }
 }

@@ -5,12 +5,13 @@ import onlineshop.domain.product.Product;
 import onlineshop.exception.ProductNotFoundException;
 import onlineshop.repo.ProductRepository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class ProductManager {
     private final ProductRepository productRepository;
 
-    ProductManager(ProductRepository productRepository) {
+    public ProductManager(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }
 
@@ -24,6 +25,13 @@ public class ProductManager {
 
     public void updateProduct(@NonNull String id, @NonNull Product product) {
         productRepository.changeSpecification(id, product);
+    }
+
+    public void changePrice(@NonNull String id, @NonNull BigDecimal newPrice) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+
+        product.changePrice(newPrice);
     }
 
     public Product findProductById(@NonNull String id) {
