@@ -21,7 +21,6 @@ public class Cart {
         this.accountId = accountId;
     }
 
-    //dodawanie do koszyka, usuwanie, czy pusty, getItems, clear
     public void addProduct(@NonNull Product product, int quantity) {
         CartItem cartItem = items.get(product.getId());
 
