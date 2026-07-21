@@ -1,4 +1,4 @@
-package onlineshop.service;
+package onlineshop.service.product;
 
 import onlineshop.domain.product.Computer;
 import onlineshop.domain.product.Product;
@@ -128,7 +128,7 @@ class ProductManagerTest {
                 .thenReturn(Optional.of(testComputer));
 
         //Act
-        productManager.increaseQuantity("1", 1);
+        productManager.increaseStock("1", 1);
 
         //Assert
         assertThat(testComputer.getQuantity())
@@ -143,7 +143,7 @@ class ProductManagerTest {
                 .thenReturn(Optional.of(testComputer));
 
         //Act
-        productManager.decreaseQuantity("1", 1);
+        productManager.decreaseStock("1", 1);
 
         //Assert
         assertThat(testComputer.getQuantity())

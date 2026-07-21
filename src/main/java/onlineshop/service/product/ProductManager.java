@@ -1,8 +1,9 @@
-package onlineshop.service;
+package onlineshop.service.product;
 
 import lombok.NonNull;
 import onlineshop.domain.product.Product;
 import onlineshop.exception.ProductNotFoundException;
+import onlineshop.exception.ProductUnavailableException;
 import onlineshop.repo.ProductRepository;
 
 import java.math.BigDecimal;
@@ -43,11 +44,16 @@ public class ProductManager {
         return productRepository.findAll();
     }
 
-    public void increaseQuantity(@NonNull String id, int amount) {
+    public void increaseStock(@NonNull String id, int amount) {
         findProductById(id).increaseQuantity(amount);
     }
 
-    public void decreaseQuantity(@NonNull String id, int amount) {
+    public void decreaseStock(@NonNull String id, int amount) {
+        Product productById = findProductById(id);
+
+        if (productById.getQuantity() < amount) throw new ProductUnavailableException(
+                productById.getId(), amount, productById.getQuantity());
+
         findProductById(id).decreaseQuantity(amount);
     }
 }
