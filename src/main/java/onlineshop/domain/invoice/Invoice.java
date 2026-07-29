@@ -7,28 +7,47 @@ import lombok.NonNull;
 import onlineshop.domain.order.Order;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Invoice {
     @NonNull
-    private final String invoiceId;
+    @EqualsAndHashCode.Include
+    private final UUID invoiceId;
+    @NonNull
+    private final String invoiceNumber;
     @NonNull
     private final Order order;
     @NonNull
     private final LocalDateTime issueDate;
 
-    @Builder
-    public Invoice(@NonNull String invoiceId, @NonNull Order order) {
-        if (invoiceId.isBlank()) throw new IllegalArgumentException("ID cannot be blank");
+    public Invoice(
+            @NonNull UUID invoiceId,
+            @NonNull String invoiceNumber,
+            @NonNull Order order,
+            @NonNull LocalDateTime issueDate
+    ) {
+        if (invoiceNumber.isBlank()) throw new IllegalArgumentException("Invoice number cannot be blank");
 
         this.invoiceId = invoiceId;
+        this.invoiceNumber = invoiceNumber;
+        this.order = order;
+        this.issueDate = issueDate;
+    }
+
+    @Builder
+    public Invoice(@NonNull String invoiceNumber, @NonNull Order order) {
+        if (invoiceNumber.isBlank()) throw new IllegalArgumentException("Invoice number cannot be blank");
+
+        this.invoiceId = UUID.randomUUID();
+        this.invoiceNumber = invoiceNumber;
         this.order = order;
         this.issueDate = LocalDateTime.now();
     }
 
     @Override
     public String toString() {
-        return "[" + invoiceId + "]";
+        return "[" + invoiceNumber + "]";
     }
 }

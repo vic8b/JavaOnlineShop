@@ -54,6 +54,6 @@ public class ProductManager {
         if (productById.getQuantity() < amount) throw new ProductUnavailableException(
                 productById.getId(), amount, productById.getQuantity());
 
-        findProductById(id).decreaseQuantity(amount);
+        productById.decreaseQuantity(amount);
     }
 }

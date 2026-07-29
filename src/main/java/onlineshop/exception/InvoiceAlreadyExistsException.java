@@ -1,7 +1,17 @@
 package onlineshop.exception;
 
+import java.util.UUID;
+
 public class InvoiceAlreadyExistsException extends RuntimeException {
-    public InvoiceAlreadyExistsException(String id) {
-        super("Invoice with id " + id + " already exists");
+    private InvoiceAlreadyExistsException(String message) {
+        super(message);
+    }
+
+    public static InvoiceAlreadyExistsException forId(UUID invoiceId) {
+        return new InvoiceAlreadyExistsException("Invoice with id " + invoiceId + " already exists");
+    }
+
+    public static InvoiceAlreadyExistsException forNumber(String invoiceNumber) {
+        return new InvoiceAlreadyExistsException("Invoice with number " + invoiceNumber + " already exists");
     }
 }

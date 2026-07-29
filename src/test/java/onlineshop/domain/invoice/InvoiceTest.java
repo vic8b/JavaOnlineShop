@@ -8,7 +8,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(MockitoExtension.class)
 class InvoiceTest {
@@ -18,22 +17,22 @@ class InvoiceTest {
     @Test
     void shouldCreateInvoice() {
         Invoice invoice = Invoice.builder()
-                .invoiceId("INV-1")
+                .invoiceNumber("INV-1")
                 .order(order)
                 .build();
 
-        assertThat(invoice.getInvoiceId()).isEqualTo("INV-1");
+        assertThat(invoice.getInvoiceNumber()).isEqualTo("INV-1");
         assertThat(invoice.getOrder()).isSameAs(order);
-        assertNotNull(invoice.getIssueDate());
+        assertThat(invoice.getIssueDate()).isNotNull();
     }
 
     @Test
-    void shouldBlankInvoiceIdThrowException() {
+    void shouldBlankInvoiceNumberThrowException() {
         assertThatThrownBy(() -> Invoice.builder()
-                .invoiceId("")
+                .invoiceNumber("")
                 .order(order)
                 .build())
-                .hasMessage("ID cannot be blank")
+                .hasMessage("Invoice number cannot be blank")
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }

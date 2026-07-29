@@ -10,12 +10,14 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Order {
     @NonNull
-    private final String orderId;
+    @EqualsAndHashCode.Include
+    private final UUID orderId;
     @NonNull
     private final Account account;
     @NonNull
@@ -27,12 +29,28 @@ public class Order {
     @NonNull
     private OrderStatus orderStatus;
 
-    @Builder
-    public Order(@NonNull String orderId, @NonNull Account account, @NonNull List<OrderItem> items) {
-        if (orderId.isBlank()) throw new IllegalArgumentException("ID cannot be blank");
+    public Order(
+            @NonNull UUID orderId,
+            @NonNull Account account,
+            @NonNull List<OrderItem> items,
+            @NonNull LocalDateTime orderDate,
+            @NonNull OrderStatus orderStatus
+    ) {
         if (items.isEmpty()) throw new IllegalArgumentException("Order must contain at least one item");
 
         this.orderId = orderId;
+        this.account = account;
+        this.items = List.copyOf(items);
+        this.totalPrice = calculateTotalPrice();
+        this.orderDate = orderDate;
+        this.orderStatus = orderStatus;
+    }
+
+    @Builder
+    public Order(@NonNull Account account, @NonNull List<OrderItem> items) {
+        if (items.isEmpty()) throw new IllegalArgumentException("Order must contain at least one item");
+
+        this.orderId = UUID.randomUUID();
         this.account = account;
         this.items = List.copyOf(items);
         this.totalPrice = calculateTotalPrice();

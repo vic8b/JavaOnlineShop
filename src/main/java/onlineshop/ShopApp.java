@@ -10,7 +10,9 @@ import onlineshop.domain.product.Smartphone;
 import onlineshop.domain.useraccount.Account;
 import onlineshop.repo.*;
 import onlineshop.service.invoice.InvoiceGenerator;
+import onlineshop.service.invoice.InvoiceNumberGenerator;
 import onlineshop.service.invoice.InvoiceService;
+import onlineshop.service.invoice.SequentialInvoiceNumberGenerator;
 import onlineshop.service.order.OrderProcessor;
 import onlineshop.service.product.ProductManager;
 
@@ -18,10 +20,11 @@ import java.math.BigDecimal;
 
 public class ShopApp {
     public static void main(String[] args) {
+        InvoiceNumberGenerator invoiceNumberGenerator = new SequentialInvoiceNumberGenerator();
         ProductRepository productRepository = new InMemoryProductRepository();
         OrderRepository orderRepository = new InMemoryOrderRepository();
         InvoiceRepository invoiceRepository = new InMemoryInvoiceRepository();
-        InvoiceGenerator invoiceService = new InvoiceService();
+        InvoiceGenerator invoiceService = new InvoiceService(invoiceNumberGenerator);
         ProductManager productManager = new ProductManager(productRepository);
         OrderProcessor orderProcessor = new OrderProcessor(
                 productManager,

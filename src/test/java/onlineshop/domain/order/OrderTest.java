@@ -20,19 +20,15 @@ class OrderTest {
     Account account;
 
     @Mock
-    List<OrderItem> items;
-
-    @Mock
     Product product;
 
     @Test
-    void shouldConstructorSuccessfullyCreateIssueDate() {
+    void shouldConstructorSuccessfullyCreateOrderDate() {
         OrderItem orderItem = createOrderItem();
 
         List<OrderItem> items = List.of(orderItem);
 
         Order order = Order.builder()
-                .orderId("1")
                 .account(account)
                 .items(items)
                 .build();
@@ -47,7 +43,6 @@ class OrderTest {
         List<OrderItem> items = List.of(orderItem);
 
         Order order = Order.builder()
-                .orderId("1")
                 .account(account)
                 .items(items)
                 .build();
@@ -57,22 +52,10 @@ class OrderTest {
     }
 
     @Test
-    void shouldBlankOrderIdThrowException() {
-        assertThatThrownBy(() -> Order.builder()
-                .orderId("")
-                .account(account)
-                .items(items)
-                .build())
-                .hasMessage("ID cannot be blank")
-                .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
     void shouldEmptyOrderItemsListThrowException() {
         List<OrderItem> items = new ArrayList<>();
 
         assertThatThrownBy(() -> Order.builder()
-                .orderId("1")
                 .account(account)
                 .items(items)
                 .build())
@@ -97,7 +80,6 @@ class OrderTest {
         List<OrderItem> items = List.of(testOrderItem1, testOrderItem2);
 
         Order order = Order.builder()
-                .orderId("1")
                 .account(account)
                 .items(items)
                 .build();
