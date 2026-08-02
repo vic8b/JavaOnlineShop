@@ -2,12 +2,15 @@ package onlineshop.cli;
 
 import lombok.NonNull;
 import onlineshop.domain.cart.Cart;
+import onlineshop.domain.invoice.Invoice;
 import onlineshop.domain.order.Order;
 import onlineshop.domain.product.Product;
 import onlineshop.domain.useraccount.Account;
 import onlineshop.exception.ProductNotFoundException;
 import onlineshop.exception.ProductUnavailableException;
+import onlineshop.service.invoice.InvoiceQueryService;
 import onlineshop.service.order.OrderProcessor;
+import onlineshop.service.order.OrderQueryService;
 import onlineshop.service.product.ProductManager;
 
 import java.util.List;
@@ -17,6 +20,8 @@ public class ShopCli {
     private final OrderProcessor orderProcessor;
     private final Account account;
     private final Cart cart;
+    private final OrderQueryService orderQueryService;
+    private final InvoiceQueryService invoiceQueryService;
     private final DataReader dataReader;
     private final ConsolePrinter printer;
 
@@ -24,6 +29,8 @@ public class ShopCli {
                    @NonNull OrderProcessor orderProcessor,
                    @NonNull Account account,
                    @NonNull Cart cart,
+                   @NonNull OrderQueryService orderQueryService,
+                   @NonNull InvoiceQueryService invoiceQueryService,
                    @NonNull DataReader dataReader,
                    @NonNull ConsolePrinter printer
     ) {
@@ -31,6 +38,8 @@ public class ShopCli {
         this.orderProcessor = orderProcessor;
         this.account = account;
         this.cart = cart;
+        this.orderQueryService = orderQueryService;
+        this.invoiceQueryService = invoiceQueryService;
         this.dataReader = dataReader;
         this.printer = printer;
     }
@@ -60,6 +69,8 @@ public class ShopCli {
             case SHOW_CART -> showCart();
             case CHECKOUT -> checkout();
             case ACCOUNT_INFO -> showAccountInfo();
+            case SHOW_ORDERS -> showOrders();
+            case SHOW_INVOICES -> showInvoices();
             case EXIT -> printer.print("End of program");
         }
     }
@@ -115,5 +126,31 @@ public class ShopCli {
     private void showAccountInfo() {
         printer.print("Account info:");
         printer.printAccount(account);
+    }
+
+    private void showOrders() {
+        printer.print("Orders:");
+
+        List<Order> orders = orderQueryService.findOrdersForAccount(account.getAccountId());
+
+        if (orders.isEmpty()) {
+            printer.print("No orders found");
+            return;
+        }
+
+        orders.forEach(printer::printOrder);
+    }
+
+    private void showInvoices() {
+        printer.print("Invoices:");
+
+        List<Invoice> invoices = invoiceQueryService.findInvoicesForAccount(account.getAccountId());
+
+        if (invoices.isEmpty()) {
+            printer.print("No invoices found");
+            return;
+        }
+
+        invoices.forEach(printer::printInvoice);
     }
 }

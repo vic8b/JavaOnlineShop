@@ -2,6 +2,7 @@ package onlineshop.cli;
 
 import lombok.NonNull;
 import onlineshop.domain.cart.CartItem;
+import onlineshop.domain.invoice.Invoice;
 import onlineshop.domain.order.Order;
 import onlineshop.domain.product.Product;
 import onlineshop.domain.useraccount.Account;
@@ -50,6 +51,11 @@ public class ConsolePrinter {
     public void printOrder(@NonNull Order order) {
         System.out.printf("Order ID: %s%nTotal price: %s%nDate: %s%n",
                 order.getOrderId(), order.getTotalPrice(), order.getOrderDate());
+    }
+
+    public void printInvoice(@NonNull Invoice invoice) {
+        System.out.printf("Invoice ID: %s%nInvoice number: %s%nDate: %s%n",
+                invoice.getInvoiceId(), invoice.getInvoiceNumber(), invoice.getIssueDate());
     }
 
     public void printAccount(@NonNull Account account) {
