@@ -14,6 +14,8 @@ import onlineshop.repo.OrderRepository;
 import onlineshop.service.product.ProductManager;
 import onlineshop.service.invoice.InvoiceGenerator;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 
 public class OrderProcessor {
@@ -21,17 +23,20 @@ public class OrderProcessor {
     private final OrderRepository orderRepository;
     private final InvoiceRepository invoiceRepository;
     private final InvoiceGenerator invoiceGenerator;
+    private final Clock clock;
 
     public OrderProcessor(
             @NonNull ProductManager productManager,
             @NonNull OrderRepository orderRepository,
             @NonNull InvoiceRepository invoiceRepository,
-            @NonNull InvoiceGenerator invoiceGenerator
+            @NonNull InvoiceGenerator invoiceGenerator,
+            @NonNull Clock clock
     ) {
         this.productManager = productManager;
         this.orderRepository = orderRepository;
         this.invoiceRepository = invoiceRepository;
         this.invoiceGenerator = invoiceGenerator;
+        this.clock = clock;
     }
 
     public Order process(@NonNull Account account, @NonNull Cart cart) {
@@ -87,6 +92,7 @@ public class OrderProcessor {
         return Order.builder()
                 .account(account)
                 .items(orderItems)
+                .orderDate(Instant.now(clock))
                 .build();
     }
 }

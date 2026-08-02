@@ -18,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -183,7 +183,7 @@ public class FileOrderRepository implements OrderRepository {
             }
 
             UUID orderId = UUID.fromString(parts[0]);
-            LocalDateTime orderDate = LocalDateTime.parse(parts[1]);
+            Instant orderDate = Instant.parse(parts[1]);
             OrderStatus orderStatus = OrderStatus.valueOf(parts[2]);
 
             Account account = Account.builder()

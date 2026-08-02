@@ -7,6 +7,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -18,15 +22,20 @@ class InvoiceServiceTest {
     @Mock
     InvoiceNumberGenerator invoiceNumberGenerator;
 
+    Instant fixedInstant = Instant.parse("2026-08-02T12:00:00Z");
+
+    Clock clock = Clock.fixed(fixedInstant, ZoneOffset.UTC);
+
     @Test
     void shouldSuccessfullyGenerateInvoice() {
         when(invoiceNumberGenerator.generate())
                 .thenReturn("INV-2026/1");
 
-        Invoice invoice = new InvoiceService(invoiceNumberGenerator).generate(order);
+        Invoice invoice = new InvoiceService(invoiceNumberGenerator, clock).generate(order);
 
         assertThat(invoice.getIssueDate())
-                .isNotNull();
+                .isNotNull()
+                .isEqualTo(fixedInstant);
 
         assertThat(invoice)
                 .hasFieldOrPropertyWithValue("order", order);

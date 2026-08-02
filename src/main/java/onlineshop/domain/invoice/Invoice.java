@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import onlineshop.domain.order.Order;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -20,13 +20,13 @@ public class Invoice {
     @NonNull
     private final Order order;
     @NonNull
-    private final LocalDateTime issueDate;
+    private final Instant issueDate;
 
     public Invoice(
             @NonNull UUID invoiceId,
             @NonNull String invoiceNumber,
             @NonNull Order order,
-            @NonNull LocalDateTime issueDate
+            @NonNull Instant issueDate
     ) {
         if (invoiceNumber.isBlank()) throw new IllegalArgumentException("Invoice number cannot be blank");
 
@@ -37,13 +37,13 @@ public class Invoice {
     }
 
     @Builder
-    public Invoice(@NonNull String invoiceNumber, @NonNull Order order) {
+    public Invoice(@NonNull String invoiceNumber, @NonNull Order order, @NonNull Instant issueDate) {
         if (invoiceNumber.isBlank()) throw new IllegalArgumentException("Invoice number cannot be blank");
 
         this.invoiceId = UUID.randomUUID();
         this.invoiceNumber = invoiceNumber;
         this.order = order;
-        this.issueDate = LocalDateTime.now();
+        this.issueDate = issueDate;
     }
 
     @Override

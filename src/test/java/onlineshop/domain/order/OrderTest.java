@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +32,7 @@ class OrderTest {
         Order order = Order.builder()
                 .account(account)
                 .items(items)
+                .orderDate(Instant.now())
                 .build();
 
         assertNotNull(order.getOrderDate());
@@ -45,6 +47,7 @@ class OrderTest {
         Order order = Order.builder()
                 .account(account)
                 .items(items)
+                .orderDate(Instant.now())
                 .build();
 
         assertThat(order.getOrderStatus())
@@ -58,6 +61,7 @@ class OrderTest {
         assertThatThrownBy(() -> Order.builder()
                 .account(account)
                 .items(items)
+                .orderDate(Instant.now())
                 .build())
                 .hasMessage("Order must contain at least one item")
                 .isInstanceOf(IllegalArgumentException.class);
@@ -82,6 +86,7 @@ class OrderTest {
         Order order = Order.builder()
                 .account(account)
                 .items(items)
+                .orderDate(Instant.now())
                 .build();
 
         assertThat(order.getTotalPrice())

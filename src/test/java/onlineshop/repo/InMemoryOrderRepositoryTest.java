@@ -13,7 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -86,6 +86,7 @@ class InMemoryOrderRepositoryTest {
         Order secondOrder = Order.builder()
                 .account(account)
                 .items(items)
+                .orderDate(Instant.now())
                 .build();
 
         orderRepository.add(order);
@@ -100,6 +101,7 @@ class InMemoryOrderRepositoryTest {
         return Order.builder()
                 .account(account)
                 .items(items)
+                .orderDate(Instant.now())
                 .build();
     }
 
@@ -108,7 +110,7 @@ class InMemoryOrderRepositoryTest {
                 orderId,
                 account,
                 items,
-                LocalDateTime.now(),
+                Instant.now(),
                 OrderStatus.PENDING
         );
     }
