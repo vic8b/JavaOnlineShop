@@ -3,12 +3,15 @@ package onlineshop;
 import onlineshop.cli.ConsolePrinter;
 import onlineshop.cli.DataReader;
 import onlineshop.cli.ShopCli;
+import onlineshop.discount.DiscountPolicy;
+import onlineshop.discount.OrderValuePercentageDiscount;
 import onlineshop.domain.cart.Cart;
 import onlineshop.domain.product.Computer;
 import onlineshop.domain.product.Electronics;
 import onlineshop.domain.product.Smartphone;
 import onlineshop.domain.useraccount.Account;
 import onlineshop.repo.*;
+import onlineshop.service.discount.PricingService;
 import onlineshop.service.invoice.*;
 import onlineshop.service.order.OrderProcessor;
 import onlineshop.service.order.OrderQueryService;
@@ -35,11 +38,14 @@ public class ShopApp {
 
         InvoiceGenerator invoiceService = new InvoiceService(invoiceNumberGenerator, clock);
         ProductManager productManager = new ProductManager(productRepository);
+        DiscountPolicy discountPolicy = new OrderValuePercentageDiscount(new BigDecimal("500"), new BigDecimal("10"));
+        PricingService pricingService = new PricingService(discountPolicy);
         OrderProcessor orderProcessor = new OrderProcessor(
                 productManager,
                 orderRepository,
                 invoiceRepository,
                 invoiceService,
+                pricingService,
                 clock
         );
         Account account = createTestAccount();
@@ -77,7 +83,7 @@ public class ShopApp {
                 Computer.builder()
                         .id("C-001")
                         .name("testComputer")
-                        .price(new BigDecimal("10"))
+                        .price(new BigDecimal("500"))
                         .quantity(2)
                         .cpu("Intel")
                         .ram("64 GB")

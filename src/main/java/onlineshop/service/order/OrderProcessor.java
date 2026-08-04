@@ -11,9 +11,11 @@ import onlineshop.exception.ProductUnavailableException;
 import onlineshop.domain.invoice.Invoice;
 import onlineshop.repo.InvoiceRepository;
 import onlineshop.repo.OrderRepository;
+import onlineshop.service.discount.PricingService;
 import onlineshop.service.product.ProductManager;
 import onlineshop.service.invoice.InvoiceGenerator;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
@@ -23,6 +25,7 @@ public class OrderProcessor {
     private final OrderRepository orderRepository;
     private final InvoiceRepository invoiceRepository;
     private final InvoiceGenerator invoiceGenerator;
+    private final PricingService pricingService;
     private final Clock clock;
 
     public OrderProcessor(
@@ -30,12 +33,14 @@ public class OrderProcessor {
             @NonNull OrderRepository orderRepository,
             @NonNull InvoiceRepository invoiceRepository,
             @NonNull InvoiceGenerator invoiceGenerator,
+            @NonNull PricingService pricingService,
             @NonNull Clock clock
     ) {
         this.productManager = productManager;
         this.orderRepository = orderRepository;
         this.invoiceRepository = invoiceRepository;
         this.invoiceGenerator = invoiceGenerator;
+        this.pricingService = pricingService;
         this.clock = clock;
     }
 
@@ -49,9 +54,11 @@ public class OrderProcessor {
 
         List<OrderItem> orderItems = createOrderItems(cart);
 
+        BigDecimal finalPrice = pricingService.calculateFinalPrice(orderItems);
+
         decreaseProductStock(orderItems);
 
-        Order order = createOrder(account, orderItems);
+        Order order = createOrder(account, orderItems, finalPrice);
         orderRepository.add(order);
 
         Invoice invoice = invoiceGenerator.generate(order);
@@ -88,10 +95,11 @@ public class OrderProcessor {
         orderItems.forEach(item -> productManager.decreaseStock(item.getProduct().getId(), item.getQuantity()));
     }
 
-    private Order createOrder(Account account, List<OrderItem> orderItems) {
+    private Order createOrder(Account account, List<OrderItem> orderItems, BigDecimal finalPrice) {
         return Order.builder()
                 .account(account)
                 .items(orderItems)
+                .totalPrice(finalPrice)
                 .orderDate(Instant.now(clock))
                 .build();
     }

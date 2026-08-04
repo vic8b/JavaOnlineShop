@@ -33,6 +33,7 @@ class OrderTest {
                 .account(account)
                 .items(items)
                 .orderDate(Instant.now())
+                .totalPrice(new BigDecimal("100.00"))
                 .build();
 
         assertNotNull(order.getOrderDate());
@@ -48,6 +49,7 @@ class OrderTest {
                 .account(account)
                 .items(items)
                 .orderDate(Instant.now())
+                .totalPrice(new BigDecimal("100.00"))
                 .build();
 
         assertThat(order.getOrderStatus())
@@ -62,6 +64,7 @@ class OrderTest {
                 .account(account)
                 .items(items)
                 .orderDate(Instant.now())
+                .totalPrice(new BigDecimal("100.00"))
                 .build())
                 .hasMessage("Order must contain at least one item")
                 .isInstanceOf(IllegalArgumentException.class);
@@ -87,10 +90,27 @@ class OrderTest {
                 .account(account)
                 .items(items)
                 .orderDate(Instant.now())
+                .totalPrice(new BigDecimal("130.00"))
                 .build();
 
         assertThat(order.getTotalPrice())
                 .isEqualByComparingTo("130.00");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenTotalPriceIsNegative() {
+        OrderItem orderItem = createOrderItem();
+
+        List<OrderItem> items = List.of(orderItem);
+
+        assertThatThrownBy(() -> Order.builder()
+                .account(account)
+                .items(items)
+                .orderDate(Instant.now())
+                .totalPrice(new BigDecimal("-100.00"))
+                .build())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Total price cannot be negative");
     }
 
     private OrderItem createOrderItem() {

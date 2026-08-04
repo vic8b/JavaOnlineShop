@@ -122,6 +122,7 @@ public class FileOrderRepository implements OrderRepository {
                 order.getOrderId().toString(),
                 order.getOrderDate().toString(),
                 order.getOrderStatus().name(),
+                order.getTotalPrice().toPlainString(),
                 order.getAccount().getAccountId(),
                 order.getAccount().getFirstName(),
                 order.getAccount().getLastName(),
@@ -178,34 +179,36 @@ public class FileOrderRepository implements OrderRepository {
         try {
             String[] parts = orderLine.split("\\|", -1);
 
-            if (parts.length != 8) {
+            if (parts.length != 9) {
                 throw new OrderPersistenceException("Invalid order record: " + orderLine);
             }
 
             UUID orderId = UUID.fromString(parts[0]);
             Instant orderDate = Instant.parse(parts[1]);
             OrderStatus orderStatus = OrderStatus.valueOf(parts[2]);
+            BigDecimal totalPrice = new BigDecimal(parts[3]);
 
             Account account = Account.builder()
-                    .accountId(parts[3])
-                    .firstName(parts[4])
-                    .lastName(parts[5])
-                    .email(parts[6])
+                    .accountId(parts[4])
+                    .firstName(parts[5])
+                    .lastName(parts[6])
+                    .email(parts[7])
                     .build();
 
-            List<OrderItem> items = deserializeOrderItems(parts[7]);
+            List<OrderItem> items = deserializeOrderItems(parts[8]);
 
             return new Order(
                     orderId,
                     account,
                     items,
+                    totalPrice,
                     orderDate,
                     orderStatus
             );
         } catch (OrderPersistenceException e) {
             throw e;
         } catch (RuntimeException e) {
-            throw new OrderPersistenceException("Could not deserialize order:" + orderLine, e);
+            throw new OrderPersistenceException("Could not deserialize order: " + orderLine, e);
         }
     }
 

@@ -87,6 +87,7 @@ class InMemoryOrderRepositoryTest {
                 .account(account)
                 .items(items)
                 .orderDate(Instant.now())
+                .totalPrice(new BigDecimal("100.00"))
                 .build();
 
         orderRepository.add(order);
@@ -102,6 +103,7 @@ class InMemoryOrderRepositoryTest {
                 .account(account)
                 .items(items)
                 .orderDate(Instant.now())
+                .totalPrice(new BigDecimal("100.00"))
                 .build();
     }
 
@@ -110,6 +112,7 @@ class InMemoryOrderRepositoryTest {
                 orderId,
                 account,
                 items,
+                new BigDecimal("90.00"),
                 Instant.now(),
                 OrderStatus.PENDING
         );
