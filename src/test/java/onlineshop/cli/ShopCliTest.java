@@ -9,7 +9,7 @@ import onlineshop.domain.useraccount.Account;
 import onlineshop.exception.ProductNotFoundException;
 import onlineshop.exception.ProductUnavailableException;
 import onlineshop.service.invoice.InvoiceQueryService;
-import onlineshop.service.order.OrderProcessor;
+import onlineshop.service.order.OrderProcessingService;
 import onlineshop.service.order.OrderQueryService;
 import onlineshop.service.product.ProductManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +29,7 @@ class ShopCliTest {
     private ProductManager productManager;
 
     @Mock
-    private OrderProcessor orderProcessor;
+    private OrderProcessingService orderProcessingService;
 
     @Mock
     private Account account;
@@ -55,7 +55,7 @@ class ShopCliTest {
     void setup() {
         shopCli = new ShopCli(
                 productManager,
-                orderProcessor,
+                orderProcessingService,
                 account,
                 cart,
                 orderQueryService,
@@ -237,7 +237,7 @@ class ShopCliTest {
                         Option.EXIT.getOptionNumber()
                 );
 
-        when(orderProcessor.process(account, cart)).thenReturn(order);
+        when(orderProcessingService.process(account, cart)).thenReturn(order);
 
         //Act
         shopCli.run();
@@ -257,7 +257,7 @@ class ShopCliTest {
                         Option.EXIT.getOptionNumber()
                 );
 
-        when(orderProcessor.process(account, cart)).thenThrow(new IllegalArgumentException("Cart cannot be empty"));
+        when(orderProcessingService.process(account, cart)).thenThrow(new IllegalArgumentException("Cart cannot be empty"));
 
         //Act
         shopCli.run();
@@ -279,7 +279,7 @@ class ShopCliTest {
                         Option.EXIT.getOptionNumber()
                 );
 
-        when(orderProcessor.process(account, cart)).thenThrow(productUnavailableException);
+        when(orderProcessingService.process(account, cart)).thenThrow(productUnavailableException);
 
         //Act
         shopCli.run();

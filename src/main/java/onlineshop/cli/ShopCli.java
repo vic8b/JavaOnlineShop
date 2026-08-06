@@ -9,7 +9,7 @@ import onlineshop.domain.useraccount.Account;
 import onlineshop.exception.ProductNotFoundException;
 import onlineshop.exception.ProductUnavailableException;
 import onlineshop.service.invoice.InvoiceQueryService;
-import onlineshop.service.order.OrderProcessor;
+import onlineshop.service.order.OrderProcessingService;
 import onlineshop.service.order.OrderQueryService;
 import onlineshop.service.product.ProductManager;
 
@@ -17,7 +17,7 @@ import java.util.List;
 
 public class ShopCli {
     private final ProductManager productManager;
-    private final OrderProcessor orderProcessor;
+    private final OrderProcessingService orderProcessingService;
     private final Account account;
     private final Cart cart;
     private final OrderQueryService orderQueryService;
@@ -26,7 +26,7 @@ public class ShopCli {
     private final ConsolePrinter printer;
 
     public ShopCli(@NonNull ProductManager productManager,
-                   @NonNull OrderProcessor orderProcessor,
+                   @NonNull OrderProcessingService orderProcessingService,
                    @NonNull Account account,
                    @NonNull Cart cart,
                    @NonNull OrderQueryService orderQueryService,
@@ -35,7 +35,7 @@ public class ShopCli {
                    @NonNull ConsolePrinter printer
     ) {
         this.productManager = productManager;
-        this.orderProcessor = orderProcessor;
+        this.orderProcessingService = orderProcessingService;
         this.account = account;
         this.cart = cart;
         this.orderQueryService = orderQueryService;
@@ -114,7 +114,7 @@ public class ShopCli {
 
     private void checkout() {
         try {
-            Order order = orderProcessor.process(account, cart);
+            Order order = orderProcessingService.process(account, cart);
 
             printer.print("Order placed successfully");
             printer.printOrder(order);

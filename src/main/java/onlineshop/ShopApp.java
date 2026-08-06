@@ -13,6 +13,7 @@ import onlineshop.domain.useraccount.Account;
 import onlineshop.repo.*;
 import onlineshop.service.discount.PricingService;
 import onlineshop.service.invoice.*;
+import onlineshop.service.order.OrderProcessingService;
 import onlineshop.service.order.OrderProcessor;
 import onlineshop.service.order.OrderQueryService;
 import onlineshop.service.product.ProductManager;
@@ -21,6 +22,7 @@ import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.time.ZoneId;
+import java.util.concurrent.Executors;
 
 public class ShopApp {
     public static void main(String[] args) {
@@ -57,9 +59,14 @@ public class ShopApp {
 
         addTestProducts(productManager);
 
+        try (OrderProcessingService orderProcessingService
+                     = new OrderProcessingService(
+                             orderProcessor, Executors.newFixedThreadPool(4))
+        ) {
+
         new ShopCli(
                 productManager,
-                orderProcessor,
+                orderProcessingService,
                 account,
                 cart,
                 orderQueryService,
@@ -67,6 +74,7 @@ public class ShopApp {
                 dataReader,
                 consolePrinter
         ).run();
+        }
     }
 
     private static Account createTestAccount() {

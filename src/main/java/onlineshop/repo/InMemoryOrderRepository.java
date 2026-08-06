@@ -5,12 +5,13 @@ import onlineshop.domain.order.Order;
 import onlineshop.exception.OrderAlreadyExistsException;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryOrderRepository implements OrderRepository {
-    private final Map<UUID, Order> orderRepo = new HashMap<>();
+    private final Map<UUID, Order> orderRepo = new ConcurrentHashMap<>();
 
     @Override
-    public void add(@NonNull Order order) {
+    public synchronized void add(@NonNull Order order) {
         if (orderRepo.putIfAbsent(order.getOrderId(), order) != null) {
             throw new OrderAlreadyExistsException(order.getOrderId().toString());
         }

@@ -6,24 +6,26 @@ import onlineshop.domain.invoice.Invoice;
 import java.time.Clock;
 import java.time.Year;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SequentialInvoiceNumberGenerator implements InvoiceNumberGenerator {
     private static final String PREFIX = "INV-";
 
     private final int year;
-    private int counter;
+    private final AtomicInteger counter;
 
     public SequentialInvoiceNumberGenerator(
             @NonNull Collection<Invoice> existingInvoices,
             @NonNull Clock clock
             ) {
         this.year = Year.now(clock).getValue();
-        this.counter = determineNextCounter(existingInvoices);
+        this.counter = new AtomicInteger(determineNextCounter(existingInvoices));
     }
 
     @Override
     public String generate() {
-        return PREFIX + year + "/" + counter++;
+        int sequence = counter.getAndIncrement();
+        return PREFIX + year + "/" + sequence;
     }
 
     private int determineNextCounter(@NonNull Collection<Invoice> existingInvoices) {

@@ -258,6 +258,7 @@ class FileInvoiceRepositoryTest {
                 .account(account)
                 .items(List.of(orderItem))
                 .orderDate(Instant.now())
+                .totalPrice(BigDecimal.TEN)
                 .build();
     }
 
@@ -274,6 +275,7 @@ class FileInvoiceRepositoryTest {
                 .account(account)
                 .items(List.of(secondOrderItem))
                 .orderDate(Instant.now())
+                .totalPrice(BigDecimal.TEN)
                 .build();
     }
 

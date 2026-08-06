@@ -20,11 +20,12 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FileOrderRepository implements OrderRepository {
-    private final Map<UUID, Order> orderRepo = new HashMap<>();
+    private final Map<UUID, Order> orderRepo = new ConcurrentHashMap<>();
     private final Path file;
 
     public FileOrderRepository(@NonNull Path file) {
@@ -34,7 +35,7 @@ public class FileOrderRepository implements OrderRepository {
     }
 
     @Override
-    public void add(@NonNull Order order) {
+    public synchronized void add(@NonNull Order order) {
         if (orderRepo.containsKey(order.getOrderId())) {
             throw new OrderAlreadyExistsException(order.getOrderId().toString());
         }

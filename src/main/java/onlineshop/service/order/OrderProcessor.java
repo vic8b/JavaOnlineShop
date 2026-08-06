@@ -28,6 +28,9 @@ public class OrderProcessor {
     private final PricingService pricingService;
     private final Clock clock;
 
+    // protects stock validation and stock update from race conditions
+    private final Object lock = new Object();
+
     public OrderProcessor(
             @NonNull ProductManager productManager,
             @NonNull OrderRepository orderRepository,
@@ -50,13 +53,17 @@ public class OrderProcessor {
             throw new IllegalArgumentException("Cart doesn't belong to the provided account");
         }
 
-        validateAvailability(cart);
+        List<OrderItem> orderItems;
 
-        List<OrderItem> orderItems = createOrderItems(cart);
+        synchronized (lock) {
+            validateAvailability(cart);
+
+            orderItems = createOrderItems(cart);
+
+            decreaseProductStock(orderItems);
+        }
 
         BigDecimal finalPrice = pricingService.calculateFinalPrice(orderItems);
-
-        decreaseProductStock(orderItems);
 
         Order order = createOrder(account, orderItems, finalPrice);
         orderRepository.add(order);
