@@ -29,9 +29,7 @@ public class ShopApp {
         Clock clock = Clock.systemUTC();
         ZoneId zoneId = ZoneId.of("Europe/Warsaw");
         ProductRepository productRepository = new InMemoryProductRepository();
-//        OrderRepository orderRepository = new InMemoryOrderRepository();
         OrderRepository orderRepository = new FileOrderRepository(Path.of("data/orders/orders.txt"));
-//        InvoiceRepository invoiceRepository = new InMemoryInvoiceRepository();
         InvoiceRepository invoiceRepository = new FileInvoiceRepository(
                 Path.of("data/invoices/invoices.txt"),
                 orderRepository);
@@ -61,19 +59,19 @@ public class ShopApp {
 
         try (OrderProcessingService orderProcessingService
                      = new OrderProcessingService(
-                             orderProcessor, Executors.newFixedThreadPool(4))
+                orderProcessor, Executors.newFixedThreadPool(4))
         ) {
 
-        new ShopCli(
-                productManager,
-                orderProcessingService,
-                account,
-                cart,
-                orderQueryService,
-                invoiceQueryService,
-                dataReader,
-                consolePrinter
-        ).run();
+            new ShopCli(
+                    productManager,
+                    orderProcessingService,
+                    account,
+                    cart,
+                    orderQueryService,
+                    invoiceQueryService,
+                    dataReader,
+                    consolePrinter
+            ).run();
         }
     }
 

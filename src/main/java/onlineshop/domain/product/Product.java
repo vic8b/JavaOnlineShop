@@ -45,7 +45,7 @@ public abstract class Product {
     }
 
     private static void validate(BigDecimal price, int quantity) {
-        if (price.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Price cannot be negative");
+        if (price.compareTo(BigDecimal.ZERO) <= 0) throw new IllegalArgumentException("Price must be positive");
         if (quantity < 0) throw new IllegalArgumentException("Quantity cannot be negative");
     }
 
