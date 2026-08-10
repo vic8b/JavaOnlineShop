@@ -12,14 +12,14 @@ class AccountTest {
                 .accountId("1")
                 .firstName("John")
                 .lastName("Doe")
-                .email("john@gmail.com")
+                .email(new Email("john@gmail.com"))
                 .build();
 
         assertThat(account)
                 .hasFieldOrPropertyWithValue("accountId", "1")
                 .hasFieldOrPropertyWithValue("firstName", "John")
                 .hasFieldOrPropertyWithValue("lastName", "Doe")
-                .hasFieldOrPropertyWithValue("email", "john@gmail.com");
+                .hasFieldOrPropertyWithValue("email", new Email("john@gmail.com"));
     }
 
     @Test
@@ -28,7 +28,7 @@ class AccountTest {
                 .accountId("1")
                 .firstName("John")
                 .lastName("Doe")
-                .email("john_gmail.com")
+                .email(new Email("john_gmail.com"))
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Email is incorrect");
@@ -37,7 +37,7 @@ class AccountTest {
                 .accountId("1")
                 .firstName("John")
                 .lastName("Doe")
-                .email("john@gmail_com")
+                .email(new Email("john@gmail_com"))
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Email is incorrect");
@@ -46,7 +46,7 @@ class AccountTest {
                 .accountId("1")
                 .firstName("  ")
                 .lastName("  ")
-                .email("john@gmail.com")
+                .email(new Email("john@gmail.com"))
                 .build())
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("First name cannot be blank");
@@ -58,7 +58,7 @@ class AccountTest {
                 .accountId("")
                 .firstName("John")
                 .lastName("Doe")
-                .email("john@gmail.com")
+                .email(new Email("john@gmail.com"))
                 .build())
                 .hasMessage("ID cannot be blank");
 
@@ -67,7 +67,7 @@ class AccountTest {
                         .accountId("")
                         .firstName("John")
                         .lastName("Doe")
-                        .email("john@gmail.com")
+                        .email(new Email("john@gmail.com"))
                         .build());
     }
 
@@ -77,7 +77,7 @@ class AccountTest {
                 .accountId("1")
                 .firstName("")
                 .lastName("Doe")
-                .email("john@gmail.com")
+                .email(new Email("john@gmail.com"))
                 .build())
                 .hasMessage("First name cannot be blank");
 
@@ -86,7 +86,7 @@ class AccountTest {
                         .accountId("1")
                         .firstName("")
                         .lastName("Doe")
-                        .email("john@gmail.com")
+                        .email(new Email("john@gmail.com"))
                         .build());
     }
 
@@ -96,7 +96,7 @@ class AccountTest {
                 .accountId("1")
                 .firstName("John")
                 .lastName("")
-                .email("john@gmail.com")
+                .email(new Email("john@gmail.com"))
                 .build())
                 .hasMessage("Last name cannot be blank");
 
@@ -105,7 +105,7 @@ class AccountTest {
                         .accountId("1")
                         .firstName("John")
                         .lastName("")
-                        .email("john@gmail.com")
+                        .email(new Email("john@gmail.com"))
                         .build());
     }
 }

@@ -12,7 +12,7 @@ import onlineshop.domain.invoice.Invoice;
 import onlineshop.repo.InvoiceRepository;
 import onlineshop.repo.OrderRepository;
 import onlineshop.service.discount.PricingService;
-import onlineshop.service.product.ProductManager;
+import onlineshop.service.product.ProductInventoryService;
 import onlineshop.service.invoice.InvoiceGenerator;
 
 import java.math.BigDecimal;
@@ -21,25 +21,24 @@ import java.time.Instant;
 import java.util.List;
 
 public class OrderProcessor {
-    private final ProductManager productManager;
+    private final ProductInventoryService productInventoryService;
     private final OrderRepository orderRepository;
     private final InvoiceRepository invoiceRepository;
     private final InvoiceGenerator invoiceGenerator;
     private final PricingService pricingService;
     private final Clock clock;
 
-    // protects stock validation and stock update from race conditions
-    private final Object lock = new Object();
+    private final Object productStockLock = new Object();
 
     public OrderProcessor(
-            @NonNull ProductManager productManager,
+            @NonNull ProductInventoryService productInventoryService,
             @NonNull OrderRepository orderRepository,
             @NonNull InvoiceRepository invoiceRepository,
             @NonNull InvoiceGenerator invoiceGenerator,
             @NonNull PricingService pricingService,
             @NonNull Clock clock
     ) {
-        this.productManager = productManager;
+        this.productInventoryService = productInventoryService;
         this.orderRepository = orderRepository;
         this.invoiceRepository = invoiceRepository;
         this.invoiceGenerator = invoiceGenerator;
@@ -47,15 +46,12 @@ public class OrderProcessor {
         this.clock = clock;
     }
 
-    public Order process(@NonNull Account account, @NonNull Cart cart) {
-        if (cart.isEmpty()) throw new IllegalArgumentException("Cart cannot be empty");
-        if (!cart.getAccountId().equals(account.getAccountId())) {
-            throw new IllegalArgumentException("Cart doesn't belong to the provided account");
-        }
+    public Order processCheckout(@NonNull Account account, @NonNull Cart cart) {
+        validateCartState(account, cart);
 
         List<OrderItem> orderItems;
 
-        synchronized (lock) {
+        synchronized (productStockLock) {
             validateAvailability(cart);
 
             orderItems = createOrderItems(cart);
@@ -76,9 +72,16 @@ public class OrderProcessor {
         return order;
     }
 
+    private static void validateCartState(Account account, Cart cart) {
+        if (cart.isEmpty()) throw new IllegalArgumentException("Cart cannot be empty");
+        if (!cart.getAccountId().equals(account.getAccountId())) {
+            throw new IllegalArgumentException("Cart doesn't belong to the provided account");
+        }
+    }
+
     private void validateAvailability(Cart cart) {
         for (CartItem item : cart.getItems()) {
-            Product product = productManager.findProductById(item.getProduct().getId());
+            Product product = productInventoryService.findProductById(item.getProduct().getId());
 
             if (product.getQuantity() < item.getQuantity())
                 throw new ProductUnavailableException(product.getId(), item.getQuantity(), product.getQuantity());
@@ -87,7 +90,7 @@ public class OrderProcessor {
 
     private List<OrderItem> createOrderItems(@NonNull Cart cart) {
         return cart.getItems().stream().map(cartItem -> {
-                    Product product = productManager.findProductById(cartItem.getProduct().getId());
+                    Product product = productInventoryService.findProductById(cartItem.getProduct().getId());
 
                     return OrderItem.builder()
                             .product(product)
@@ -99,7 +102,7 @@ public class OrderProcessor {
     }
 
     private void decreaseProductStock(List<OrderItem> orderItems) {
-        orderItems.forEach(item -> productManager.decreaseStock(item.getProduct().getId(), item.getQuantity()));
+        orderItems.forEach(item -> productInventoryService.decreaseStock(item.product().getId(), item.quantity()));
     }
 
     private Order createOrder(Account account, List<OrderItem> orderItems, BigDecimal finalPrice) {

@@ -24,8 +24,8 @@ public class ProductPercentageDiscount implements DiscountPolicy {
     @Override
     public BigDecimal calculateDiscount(@NonNull List<OrderItem> items, @NonNull BigDecimal regularPrice) {
         return items.stream()
-                .filter(item -> item.getProduct().getId().equals(productId))
-                .map(OrderItem::getTotalPrice)
+                .filter(item -> item.product().getId().equals(productId))
+                .map(OrderItem::totalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .multiply(percentage)
                 .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);

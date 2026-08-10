@@ -6,6 +6,7 @@ import onlineshop.domain.invoice.Invoice;
 import onlineshop.domain.product.Electronics;
 import onlineshop.domain.product.Product;
 import onlineshop.domain.useraccount.Account;
+import onlineshop.domain.useraccount.Email;
 import onlineshop.exception.ProductUnavailableException;
 import onlineshop.repo.InMemoryInvoiceRepository;
 import onlineshop.repo.InMemoryOrderRepository;
@@ -15,7 +16,7 @@ import onlineshop.repo.OrderRepository;
 import onlineshop.repo.ProductRepository;
 import onlineshop.service.discount.PricingService;
 import onlineshop.service.invoice.InvoiceGenerator;
-import onlineshop.service.product.ProductManager;
+import onlineshop.service.product.ProductInventoryService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +53,7 @@ class OrderProcessorConcurrencyTest {
         orderRepository = new InMemoryOrderRepository();
         invoiceRepository = new InMemoryInvoiceRepository();
 
-        ProductManager productManager = new ProductManager(productRepository);
+        ProductInventoryService productInventoryService = new ProductInventoryService(productRepository);
 
         PricingService pricingService = new PricingService(new NoDiscountPolicy());
 
@@ -71,7 +72,7 @@ class OrderProcessorConcurrencyTest {
         );
 
         orderProcessor = new OrderProcessor(
-                productManager,
+                productInventoryService,
                 orderRepository,
                 invoiceRepository,
                 invoiceGenerator,
@@ -86,7 +87,7 @@ class OrderProcessorConcurrencyTest {
                 .quantity(1)
                 .build();
 
-        productManager.addProduct(product);
+        productInventoryService.addProduct(product);
     }
 
     @AfterEach
@@ -105,11 +106,11 @@ class OrderProcessorConcurrencyTest {
 
         //Act
         Future<Boolean> firstResult = executorService.submit(
-                () -> processOrder(firstAccount, firstCart)
+                () -> processCheckoutOrder(firstAccount, firstCart)
         );
 
         Future<Boolean> secondResult = executorService.submit(
-                () -> processOrder(secondAccount, secondCart)
+                () -> processCheckoutOrder(secondAccount, secondCart)
         );
 
         long successfulOrders = Stream.of(firstResult.get(), secondResult.get())
@@ -123,9 +124,9 @@ class OrderProcessorConcurrencyTest {
         assertThat(invoiceRepository.findAll()).hasSize(1);
     }
 
-    private boolean processOrder(Account account, Cart cart) {
+    private boolean processCheckoutOrder(Account account, Cart cart) {
         try {
-            orderProcessor.process(account, cart);
+            orderProcessor.processCheckout(account, cart);
             return true;
         } catch (ProductUnavailableException e) {
             return false;
@@ -137,7 +138,7 @@ class OrderProcessorConcurrencyTest {
                 .accountId(accountId)
                 .firstName("John")
                 .lastName("Doe")
-                .email(accountId.toLowerCase() + "@example.com")
+                .email(new Email("john@gmail.com"))
                 .build();
     }
 

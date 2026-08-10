@@ -22,20 +22,20 @@ class InvoiceServiceTest {
     @Mock
     InvoiceNumberGenerator invoiceNumberGenerator;
 
-    Instant fixedInstant = Instant.parse("2026-08-02T12:00:00Z");
+    private static final Instant FIXED_INSTANT = Instant.parse("2026-08-02T12:00:00Z");
 
-    Clock clock = Clock.fixed(fixedInstant, ZoneOffset.UTC);
+    private static final Clock CLOCK = Clock.fixed(FIXED_INSTANT, ZoneOffset.UTC);
 
     @Test
     void shouldSuccessfullyGenerateInvoice() {
         when(invoiceNumberGenerator.generate())
                 .thenReturn("INV-2026/1");
 
-        Invoice invoice = new InvoiceService(invoiceNumberGenerator, clock).generate(order);
+        Invoice invoice = new InvoiceService(invoiceNumberGenerator, CLOCK).generate(order);
 
         assertThat(invoice.getIssueDate())
                 .isNotNull()
-                .isEqualTo(fixedInstant);
+                .isEqualTo(FIXED_INSTANT);
 
         assertThat(invoice)
                 .hasFieldOrPropertyWithValue("order", order);

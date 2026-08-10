@@ -23,8 +23,8 @@ class PricingServiceTest {
         OrderItem firstOrderItem = mock(OrderItem.class);
         OrderItem secondOrderItem = mock(OrderItem.class);
 
-        when(firstOrderItem.getTotalPrice()).thenReturn(new BigDecimal("10.00"));
-        when(secondOrderItem.getTotalPrice()).thenReturn(new BigDecimal("100.00"));
+        when(firstOrderItem.totalPrice()).thenReturn(new BigDecimal("10.00"));
+        when(secondOrderItem.totalPrice()).thenReturn(new BigDecimal("100.00"));
 
         List<OrderItem> orderItems = List.of(firstOrderItem, secondOrderItem);
 
@@ -44,7 +44,7 @@ class PricingServiceTest {
     void shouldReturnRegularPriceWhenDiscountIsZero() {
         OrderItem orderItem = mock(OrderItem.class);
 
-        when(orderItem.getTotalPrice()).thenReturn(new BigDecimal("100.00"));
+        when(orderItem.totalPrice()).thenReturn(new BigDecimal("100.00"));
 
         List<OrderItem> items = List.of(orderItem);
 

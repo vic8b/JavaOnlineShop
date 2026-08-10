@@ -20,13 +20,13 @@ public class OrderProcessingService implements AutoCloseable {
         this.executorService = executorService;
     }
 
-    public Order process(@NonNull Account account, @NonNull Cart cart) {
-        return orderProcessor.process(account, cart);
+    public Order processCheckout(@NonNull Account account, @NonNull Cart cart) {
+        return orderProcessor.processCheckout(account, cart);
     }
 
-    public CompletableFuture<Order> processAsync(@NonNull Account account, @NonNull Cart cart) {
+    public CompletableFuture<Order> processCheckoutAsync(@NonNull Account account, @NonNull Cart cart) {
         return CompletableFuture.supplyAsync(
-                () -> orderProcessor.process(account, cart),
+                () -> orderProcessor.processCheckout(account, cart),
                 executorService
         );
     }

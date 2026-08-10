@@ -6,6 +6,7 @@ import onlineshop.domain.order.OrderItem;
 import onlineshop.domain.product.Electronics;
 import onlineshop.domain.product.Product;
 import onlineshop.domain.useraccount.Account;
+import onlineshop.domain.useraccount.Email;
 import onlineshop.exception.InvoiceAlreadyExistsException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -232,7 +233,7 @@ class FileInvoiceRepositoryTest {
                 .accountId("ACC-1")
                 .firstName("John")
                 .lastName("Doe")
-                .email("john@example.com")
+                .email(new Email("john@gmail.com"))
                 .build();
     }
 

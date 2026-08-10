@@ -1,6 +1,7 @@
 package onlineshop.cli;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import onlineshop.domain.cart.CartItem;
 import onlineshop.domain.invoice.Invoice;
 import onlineshop.domain.order.Order;
@@ -11,6 +12,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
+@Slf4j
 public class ConsolePrinter {
     private final ZoneId displayZone;
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -20,7 +22,7 @@ public class ConsolePrinter {
     }
 
     public void print(String text) {
-        System.out.println(text);
+        log.info("\n{}", text);
     }
 
     public void printWelcomeMessage() {
@@ -37,15 +39,13 @@ public class ConsolePrinter {
                     .append(" - ")
                     .append(option.getDescription())
                     .append(System.lineSeparator());
-
-
         }
 
-        print(String.valueOf(stringBuilder));
+        print(stringBuilder.toString());
     }
 
     public void printProduct(@NonNull Product product) {
-        System.out.printf("%s | %s | price: %s | available: %d%n",
+        log.info("{} | {} | price: {} | available: {}",
                 product.getId(),
                 product.getName(),
                 product.getPrice(),
@@ -53,27 +53,27 @@ public class ConsolePrinter {
     }
 
     public void printCartItem(@NonNull CartItem cartItem) {
-        System.out.printf("%s | quantity: %d | unit price: %s%n",
+        log.info("{} | quantity: {} | unit price: {}",
                 cartItem.getProduct().getName(),
                 cartItem.getQuantity(),
                 cartItem.getProduct().getPrice());
     }
 
-    private String formatDate(Instant instant) {
-        return FORMATTER.format(instant.atZone(displayZone));
-    }
-
     public void printOrder(@NonNull Order order) {
-        System.out.printf("Order ID: %s%nTotal price: %s%nDate: %s%n",
+        log.info("Order ID: {}\nTotal price: {}\nDate: {}",
                 order.getOrderId(), order.getTotalPrice(), formatDate(order.getOrderDate()));
     }
 
     public void printInvoice(@NonNull Invoice invoice) {
-        System.out.printf("Invoice ID: %s%nInvoice number: %s%nDate: %s%n",
+        log.info("Invoice ID: {}\nInvoice number: {}\nDate: {}",
                 invoice.getInvoiceId(), invoice.getInvoiceNumber(), formatDate(invoice.getIssueDate()));
     }
 
     public void printAccount(@NonNull Account account) {
         print(account.toString());
+    }
+
+    private String formatDate(Instant instant) {
+        return FORMATTER.format(instant.atZone(displayZone));
     }
 }

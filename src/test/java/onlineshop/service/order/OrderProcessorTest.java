@@ -10,7 +10,7 @@ import onlineshop.exception.ProductUnavailableException;
 import onlineshop.repo.*;
 import onlineshop.service.discount.PricingService;
 import onlineshop.service.invoice.InvoiceGenerator;
-import onlineshop.service.product.ProductManager;
+import onlineshop.service.product.ProductInventoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,13 +27,12 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class OrderProcessorTest {
     @Mock
-    ProductManager productManager;
+    ProductInventoryService productInventoryService;
 
     @Mock
     OrderRepository orderRepository;
@@ -62,21 +61,21 @@ class OrderProcessorTest {
     @Mock
     PricingService pricingService;
 
-    Instant fixedInstant = Instant.parse("2026-08-02T12:00:00Z");
+    private static final Instant FIXED_INSTANT = Instant.parse("2026-08-02T12:00:00Z");
 
-    Clock clock = Clock.fixed(fixedInstant, ZoneOffset.UTC);
+    private static final Clock CLOCK = Clock.fixed(FIXED_INSTANT, ZoneOffset.UTC);
 
     OrderProcessor orderProcessor;
 
     @BeforeEach
     void setup() {
         orderProcessor = new OrderProcessor(
-                productManager,
+                productInventoryService,
                 orderRepository,
                 invoiceRepository,
                 invoiceGenerator,
                 pricingService,
-                clock
+                CLOCK
         );
     }
 
@@ -92,10 +91,10 @@ class OrderProcessorTest {
         ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
 
         //Act
-        Order result = orderProcessor.process(account, cart);
+        Order result = orderProcessor.processCheckout(account, cart);
 
         //Assert
-        verify(productManager).decreaseStock("PROD-1", 2);
+        verify(productInventoryService).decreaseStock("PROD-1", 2);
 
         verify(orderRepository).add(orderCaptor.capture());
 
@@ -106,11 +105,11 @@ class OrderProcessorTest {
         assertThat(result.getAccount()).isSameAs(savedOrder.getAccount());
         assertThat(result.getItems()).isSameAs(savedOrder.getItems());
         assertThat(result.getItems()).hasSize(1);
-        assertThat(result.getItems().getFirst().getProduct()).isSameAs(product);
-        assertThat(result.getItems().getFirst().getQuantity()).isEqualTo(2);
-        assertThat(result.getItems().getFirst().getUnitPrice()).isEqualByComparingTo("100.00");
+        assertThat(result.getItems().getFirst().product()).isSameAs(product);
+        assertThat(result.getItems().getFirst().quantity()).isEqualTo(2);
+        assertThat(result.getItems().getFirst().unitPrice()).isEqualByComparingTo("100.00");
         assertThat(result.getTotalPrice()).isEqualByComparingTo("180.00");
-        assertThat(result.getOrderDate()).isEqualTo(fixedInstant);
+        assertThat(result.getOrderDate()).isEqualTo(FIXED_INSTANT);
 
         verify(invoiceGenerator).generate(result);
         verify(invoiceRepository).add(invoice);
@@ -119,7 +118,7 @@ class OrderProcessorTest {
     }
 
     @Test
-    void shouldProcessAllProductsFromTheCart() {
+    void shouldProcessCheckoutAllProductsFromTheCart() {
         //Arrange
         CartItem secondCartItem = mock(CartItem.class);
         Product secondProduct = mock(Product.class);
@@ -143,13 +142,13 @@ class OrderProcessorTest {
         when(secondProduct.getQuantity()).thenReturn(10);
         when(secondProduct.getPrice()).thenReturn(new BigDecimal("10.00"));
 
-        when(productManager.findProductById("PROD-1")).thenReturn(product);
-        when(productManager.findProductById("PROD-2")).thenReturn(secondProduct);
+        when(productInventoryService.findProductById("PROD-1")).thenReturn(product);
+        when(productInventoryService.findProductById("PROD-2")).thenReturn(secondProduct);
 
         when(invoiceGenerator.generate(any(Order.class))).thenReturn(invoice);
 
         //Act
-        Order result = orderProcessor.process(account, cart);
+        Order result = orderProcessor.processCheckout(account, cart);
 
         //Assert
         assertThat(result.getItems())
@@ -159,8 +158,8 @@ class OrderProcessorTest {
                 .isEqualByComparingTo("225.00");
 
         verify(pricingService).calculateFinalPrice(anyList());
-        verify(productManager).decreaseStock("PROD-1", 2);
-        verify(productManager).decreaseStock("PROD-2", 5);
+        verify(productInventoryService).decreaseStock("PROD-1", 2);
+        verify(productInventoryService).decreaseStock("PROD-2", 5);
     }
 
     @Test
@@ -184,14 +183,14 @@ class OrderProcessorTest {
         when(secondProduct.getId()).thenReturn("PROD-2");
         when(secondProduct.getQuantity()).thenReturn(10);
 
-        when(productManager.findProductById("PROD-1")).thenReturn(product);
-        when(productManager.findProductById("PROD-2")).thenReturn(secondProduct);
+        when(productInventoryService.findProductById("PROD-1")).thenReturn(product);
+        when(productInventoryService.findProductById("PROD-2")).thenReturn(secondProduct);
 
         //Act + Assert
         assertThatExceptionOfType(ProductUnavailableException.class)
-                .isThrownBy(() -> orderProcessor.process(account, cart));
+                .isThrownBy(() -> orderProcessor.processCheckout(account, cart));
 
-        verify(productManager, never()).decreaseStock(anyString(), anyInt());
+        verify(productInventoryService, never()).decreaseStock(anyString(), anyInt());
         verify(cart, never()).clear();
     }
 
@@ -202,7 +201,7 @@ class OrderProcessorTest {
 
         //Act + Assert
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> orderProcessor.process(account, cart))
+                .isThrownBy(() -> orderProcessor.processCheckout(account, cart))
                 .withMessage("Cart cannot be empty");
 
         verifyNoInteractions(orderRepository);
@@ -220,7 +219,7 @@ class OrderProcessorTest {
 
         //Act + Assert
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> orderProcessor.process(account, cart))
+                .isThrownBy(() -> orderProcessor.processCheckout(account, cart))
                 .withMessage("Cart doesn't belong to the provided account");
 
         verifyNoInteractions(orderRepository);
@@ -244,13 +243,16 @@ class OrderProcessorTest {
         when(product.getId()).thenReturn("PROD-1");
         when(product.getQuantity()).thenReturn(10);
 
-        when(productManager.findProductById("PROD-1")).thenReturn(product);
+        when(productInventoryService.findProductById("PROD-1")).thenReturn(product);
 
         //Act + Assert
         assertThatExceptionOfType(ProductUnavailableException.class)
-                .isThrownBy(() -> orderProcessor.process(account, cart))
-                .withMessage("Product PROD-1 is unavailable in requested quantity." + "\nRequested: 12"
-                        + "\nAvailable: 10");
+                .isThrownBy(() -> orderProcessor.processCheckout(account, cart))
+                .withMessage("""
+                        Product PROD-1 is unavailable in requested quantity.
+                        Requested: 12\
+                        
+                        Available: 10""");
 
         verifyNoInteractions(orderRepository);
         verifyNoInteractions(invoiceRepository);
@@ -273,13 +275,13 @@ class OrderProcessorTest {
         when(product.getId()).thenReturn("PROD-1");
         when(product.getQuantity()).thenReturn(10);
 
-        when(productManager.findProductById("PROD-1")).thenReturn(product);
+        when(productInventoryService.findProductById("PROD-1")).thenReturn(product);
 
         //Act + Assert
         assertThatExceptionOfType(ProductUnavailableException.class)
-                .isThrownBy(() -> orderProcessor.process(account, cart));
+                .isThrownBy(() -> orderProcessor.processCheckout(account, cart));
 
-        verify(productManager, never()).decreaseStock(anyString(), anyInt());
+        verify(productInventoryService, never()).decreaseStock(anyString(), anyInt());
     }
 
     @Test
@@ -290,10 +292,10 @@ class OrderProcessorTest {
 
         when(invoiceGenerator.generate(any(Order.class))).thenReturn(invoice);
 
-        orderProcessor.process(account, cart);
+        orderProcessor.processCheckout(account, cart);
 
         InOrder inOrder = inOrder(
-                productManager,
+                productInventoryService,
                 pricingService,
                 orderRepository,
                 invoiceGenerator,
@@ -301,7 +303,7 @@ class OrderProcessorTest {
                 cart
         );
 
-        inOrder.verify(productManager).decreaseStock("PROD-1", 2);
+        inOrder.verify(productInventoryService).decreaseStock("PROD-1", 2);
         inOrder.verify(pricingService).calculateFinalPrice(anyList());
         inOrder.verify(orderRepository).add(any(Order.class));
         inOrder.verify(invoiceGenerator).generate(any(Order.class));
@@ -325,6 +327,6 @@ class OrderProcessorTest {
         when(product.getQuantity()).thenReturn(10);
         when(product.getPrice()).thenReturn(new BigDecimal("100.00"));
 
-        when(productManager.findProductById("PROD-1")).thenReturn(product);
+        when(productInventoryService.findProductById("PROD-1")).thenReturn(product);
     }
 }

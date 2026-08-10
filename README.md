@@ -66,37 +66,37 @@ synchronous and asynchronous order processing, and thread-safe business operatio
 
 ## Domain model
 
-| Class | Responsibility                                                                             |
-|---|--------------------------------------------------------------------------------------------|
-| `Account` | Represents the customer account used during shopping and order assignment.                 |
-| `Product` | Base product abstraction containing common product data.                                   |
+| Class         | Responsibility                                                                             |
+|---------------|--------------------------------------------------------------------------------------------|
+| `Account`     | Represents the customer account used during shopping and order assignment.                 |
+| `Product`     | Base product abstraction containing common product data.                                   |
 | `Electronics` | General electronics product implementation.                                                |
-| `Computer` | Specialized electronics product with computer-specific properties.                         |
-| `Smartphone` | Specialized electronics product with smartphone-specific properties.                       |
-| `Cart` | Stores products selected by a customer before checkout.                                    |
-| `CartItem` | Represents a product and its requested quantity inside the cart.                           |
-| `Order` | Represents a completed customer order together with its final price, status and timestamp. |
-| `OrderItem` | Stores a purchased quantity and unit price captured at checkout time.                      |
-| `Invoice` | Represents an invoice generated for a successfully created order.                          |
+| `Computer`    | Specialized electronics product with computer-specific properties.                         |
+| `Smartphone`  | Specialized electronics product with smartphone-specific properties.                       |
+| `Cart`        | Stores products selected by a customer before checkout.                                    |
+| `CartItem`    | Represents a product and its requested quantity inside the cart.                           |
+| `Order`       | Represents a completed customer order together with its final price, status and timestamp. |
+| `OrderItem`   | Stores a purchased quantity and unit price captured at checkout time.                      |
+| `Invoice`     | Represents an invoice generated for a successfully created order.                          |
 
 ---
 
 ## Architecture
 
-| Component | Responsibility                                                             |
-|---|----------------------------------------------------------------------------|
-| `ShopCli` | Handles user interaction and delegates operations to application services. |
-| `ProductManager` | Provides product lookup and stock management operations.                   |
-| `OrderProcessor` | Coordinates the complete checkout workflow for a single order.             |
-| `OrderProcessingService` | Provides synchronous and asynchronous order processing.                    |
-| `PricingService` | Calculates the final order price using the configured discount policy.     |
-| `InvoiceService` | Creates invoices for completed orders.                                     |
+| Component                          | Responsibility                                                             |
+|------------------------------------|----------------------------------------------------------------------------|
+| `ShopCli`                          | Handles user interaction and delegates operations to application services. |
+| `ProductManager`                   | Provides product lookup and stock management operations.                   |
+| `OrderProcessor`                   | Coordinates the complete checkout workflow for a single order.             |
+| `OrderProcessingService`           | Provides synchronous and asynchronous order processing.                    |
+| `PricingService`                   | Calculates the final order price using the configured discount policy.     |
+| `InvoiceService`                   | Creates invoices for completed orders.                                     |
 | `SequentialInvoiceNumberGenerator` | Generates sequential invoice numbers and supports concurrent access.       |
-| `OrderQueryService` | Retrieves orders belonging to a selected account.                          |
-| `InvoiceQueryService` | Retrieves invoices belonging to a selected account.                        |
-| `OrderRepository` | Defines persistence operations for orders.                                 |
-| `InvoiceRepository` | Defines persistence operations for invoices.                               |
-| `ProductRepository` | Defines persistence operations for products.                               |
+| `OrderQueryService`                | Retrieves orders belonging to a selected account.                          |
+| `InvoiceQueryService`              | Retrieves invoices belonging to a selected account.                        |
+| `OrderRepository`                  | Defines persistence operations for orders.                                 |
+| `InvoiceRepository`                | Defines persistence operations for invoices.                               |
+| `ProductRepository`                | Defines persistence operations for products.                               |
 
 ---
 
