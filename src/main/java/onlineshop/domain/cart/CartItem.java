@@ -14,6 +14,7 @@ public class CartItem {
     @NonNull
     private int quantity;
 
+    // Design pattern: Builder
     @Builder
     public CartItem(Product product, int quantity) {
         if (quantity <= 0) throw new IllegalArgumentException("Quantity must be positive");

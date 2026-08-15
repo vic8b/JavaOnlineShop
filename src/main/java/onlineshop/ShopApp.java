@@ -5,6 +5,7 @@ import onlineshop.cli.DataReader;
 import onlineshop.cli.ShopCli;
 import onlineshop.discount.DiscountPolicy;
 import onlineshop.discount.OrderValuePercentageDiscount;
+import onlineshop.discount.ProductPercentageDiscount;
 import onlineshop.domain.cart.Cart;
 import onlineshop.domain.product.Computer;
 import onlineshop.domain.product.Electronics;
@@ -39,7 +40,12 @@ public class ShopApp {
 
         InvoiceGenerator invoiceService = new InvoiceService(invoiceNumberGenerator, clock);
         ProductInventoryService productInventoryService = new ProductInventoryService(productRepository);
-        DiscountPolicy discountPolicy = new OrderValuePercentageDiscount(new BigDecimal("500"), new BigDecimal("10"));
+        DiscountPolicy discountPolicy =
+                new OrderValuePercentageDiscount(
+                        new BigDecimal("500"),
+                        new BigDecimal("10")
+                )
+                .andThen(new ProductPercentageDiscount("C-001", new BigDecimal("5")));
         PricingService pricingService = new PricingService(discountPolicy);
         OrderProcessor orderProcessor = new OrderProcessor(
                 productInventoryService,

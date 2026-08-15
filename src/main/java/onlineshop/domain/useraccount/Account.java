@@ -17,6 +17,7 @@ public class Account {
     @NonNull
     private final Email email;
 
+    // Design pattern: Builder
     @Builder
     public Account(@NonNull String accountId, @NonNull String firstName, @NonNull String lastName, @NonNull Email email) {
         if (accountId.isBlank()) throw new IllegalArgumentException("ID cannot be blank");

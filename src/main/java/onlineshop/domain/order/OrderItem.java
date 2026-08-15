@@ -7,6 +7,7 @@ import onlineshop.domain.product.Product;
 import java.math.BigDecimal;
 
 public record OrderItem(@NonNull Product product, int quantity, @NonNull BigDecimal unitPrice) {
+    // Design pattern: Builder
     @Builder
     public OrderItem {
         if (quantity <= 0) throw new IllegalArgumentException("Quantity must be positive");

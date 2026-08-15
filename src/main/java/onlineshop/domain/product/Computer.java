@@ -15,6 +15,7 @@ public class Computer extends Product {
     @NonNull
     private final String ram;
 
+    // Design pattern: Builder
     @Builder
     public Computer(@NonNull String id, @NonNull String name, @NonNull BigDecimal price, int quantity, @NonNull String cpu, @NonNull String ram) {
         super(id, name, price, quantity);
