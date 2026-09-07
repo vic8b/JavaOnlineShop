@@ -65,8 +65,10 @@ class FileInvoiceRepositoryTest {
 
     @Test
     void shouldCreateFilesWhenItDoesNotExist() {
+        //Arrange
         Path file = tempDir.resolve("invoices.txt");
 
+        //Act + Assert
         assertThat(file).doesNotExist();
 
         new FileInvoiceRepository(file, orderRepository);
@@ -78,10 +80,13 @@ class FileInvoiceRepositoryTest {
 
     @Test
     void shouldAddInvoiceToTheRepository() {
+        //Arrange
         createRepository();
 
+        //Act
         invoiceRepository.add(invoice);
 
+        //Assert
         assertThat(invoiceRepository.findAll())
                 .singleElement()
                 .isEqualTo(invoice);
@@ -93,17 +98,21 @@ class FileInvoiceRepositoryTest {
 
     @Test
     void shouldLoadPreviouslySavedInvoice() {
+        //Arrange
         createRepository();
 
+        //Act
         invoiceRepository.add(invoice);
 
         FileInvoiceRepository reader = new FileInvoiceRepository(file, orderRepository);
 
+        //Assert
         assertThat(reader.findById(invoice.getInvoiceId())).contains(invoice);
     }
 
     @Test
     void shouldLoadAllPreviouslySavedInvoices() {
+        //Arrange
         createRepository();
 
         Invoice secondInvoice = Invoice.builder()
@@ -112,11 +121,13 @@ class FileInvoiceRepositoryTest {
                 .issueDate(Instant.now())
                 .build();
 
+        //Act
         invoiceRepository.add(invoice);
         invoiceRepository.add(secondInvoice);
 
         FileInvoiceRepository reader = new FileInvoiceRepository(file, orderRepository);
 
+        //Assert
         assertThat(reader.findAll())
                 .contains(invoice)
                 .contains(secondInvoice);
@@ -124,6 +135,7 @@ class FileInvoiceRepositoryTest {
 
     @Test
     void shouldRejectDuplicateInvoiceNumber() {
+        //Arrange
         createRepository();
 
         Invoice invoiceDuplicate = Invoice.builder()
@@ -132,8 +144,10 @@ class FileInvoiceRepositoryTest {
                 .issueDate(Instant.now())
                 .build();
 
+        //Act
         invoiceRepository.add(invoice);
 
+        //Act
         assertThatThrownBy(() -> invoiceRepository.add(invoiceDuplicate))
                 .isInstanceOf(InvoiceAlreadyExistsException.class)
                 .hasMessage("Invoice with number " + invoice.getInvoiceNumber() + " already exists");
@@ -147,6 +161,7 @@ class FileInvoiceRepositoryTest {
 
     @Test
     void shouldRejectDuplicateInvoiceId() {
+        //Arrange
         createRepository();
 
         UUID mockId = UUID.randomUUID();
@@ -154,8 +169,10 @@ class FileInvoiceRepositoryTest {
         Invoice originalInvoice = new Invoice(mockId, "INV-2026/1", order, Instant.now());
         Invoice duplicateTestInvoice = new Invoice(mockId, "INV-2026/2", order, Instant.now());
 
+        //Act
         invoiceRepository.add(originalInvoice);
 
+        //Assert
         assertThatThrownBy(() -> invoiceRepository.add(duplicateTestInvoice))
                 .isInstanceOf(InvoiceAlreadyExistsException.class)
                 .hasMessage("Invoice with id " + mockId + " already exists");
@@ -166,36 +183,46 @@ class FileInvoiceRepositoryTest {
 
     @Test
     void shouldFindInvoiceById() {
+        //Arrange
         createRepository();
 
+        //Act
         invoiceRepository.add(invoice);
 
+        //Assert
         assertThat(invoiceRepository.findById(invoice.getInvoiceId()))
                 .contains(invoice);
     }
 
     @Test
     void shouldFindInvoiceByNumber() {
+        //Arrange
         createRepository();
 
+        //Act
         invoiceRepository.add(invoice);
 
+        //Assert
         assertThat(invoiceRepository.findByNumber(invoice.getInvoiceNumber()))
                 .contains(invoice);
     }
 
     @Test
     void shouldFindCorrectInvoiceByOrderId() {
+        //Arrange
         createRepository();
 
+        //Act
         invoiceRepository.add(invoice);
 
+        //Assert
         assertThat(invoiceRepository.findByOrderId(order.getOrderId()))
                 .contains(invoice);
     }
 
     @Test
     void shouldFindAllInvoices() {
+        //Arrange
         createRepository();
 
         Invoice secondInvoice = Invoice.builder()
@@ -204,9 +231,11 @@ class FileInvoiceRepositoryTest {
                 .issueDate(Instant.now())
                 .build();
 
+        //Act
         invoiceRepository.add(invoice);
         invoiceRepository.add(secondInvoice);
 
+        //Assert
         assertThat(invoiceRepository.findAll())
                 .contains(invoice)
                 .contains(secondInvoice);
@@ -214,16 +243,20 @@ class FileInvoiceRepositoryTest {
 
     @Test
     void shouldReturnEmptyWhenInvoiceDoesNotExist() {
+        //Arrange
         createRepository();
 
+        //Assert
         assertThat(invoiceRepository.findById(UUID.randomUUID()))
                 .isEmpty();
     }
 
     @Test
     void shouldReturnEmptyWhenInvoiceForOrderDoesNotExist() {
+        //Arrange
         createRepository();
 
+        //Assert
         assertThat(invoiceRepository.findByOrderId(UUID.randomUUID()))
                 .isEmpty();
     }

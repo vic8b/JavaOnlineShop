@@ -28,11 +28,14 @@ class InvoiceServiceTest {
 
     @Test
     void shouldSuccessfullyGenerateInvoice() {
+        //Arrange
         when(invoiceNumberGenerator.generate())
                 .thenReturn("INV-2026/1");
 
+        //Act
         Invoice invoice = new InvoiceService(invoiceNumberGenerator, CLOCK).generate(order);
 
+        //Assert
         assertThat(invoice.getIssueDate())
                 .isNotNull()
                 .isEqualTo(FIXED_INSTANT);

@@ -102,10 +102,12 @@ class OrderProcessingServiceTest {
 
     @Test
     void shouldProcessOrdersFasterAsynchronouslyThanSynchronously() {
+        //Arrange
         List<Account> accounts = createAccounts();
         List<Cart> carts = createCarts();
         List<Order> orders = createOrders();
 
+        //Act
         mockDelayedProcessing(accounts, carts, orders);
 
         long synchronousStart = System.nanoTime();
@@ -120,6 +122,7 @@ class OrderProcessingServiceTest {
 
         long asynchronousDuration = System.nanoTime() - asynchronousStart;
 
+        //Assert
         assertThat(synchronousOrders).containsExactlyElementsOf(orders);
 
         assertThat(asynchronousOrders).containsExactlyElementsOf(orders);
@@ -147,17 +150,18 @@ class OrderProcessingServiceTest {
     }
 
     private void mockDelayedProcessing(List<Account> accounts, List<Cart> carts, List<Order> orders) {
-        for (int i = 0; i < orders.size(); i++) {
-            Account currentAccount = accounts.get(i);
-            Cart currentCart = carts.get(i);
-            Order expectedOrder = orders.get(i);
+        IntStream.range(0, orders.size())
+                .forEach(index -> {
+                    Account currentAccount = accounts.get(index);
+                    Cart currentCart = carts.get(index);
+                    Order expectedOrder = orders.get(index);
 
-            when(orderProcessor.processCheckout(currentAccount, currentCart))
-                    .thenAnswer(invocationOnMock -> {
-                        Thread.sleep(PROCESSING_DELAY_IN_MS);
-                        return expectedOrder;
-                    });
-        }
+                    when(orderProcessor.processCheckout(currentAccount, currentCart))
+                            .thenAnswer(invocationOnMock -> {
+                                Thread.sleep(PROCESSING_DELAY_IN_MS);
+                                return expectedOrder;
+                            });
+                });
     }
 
     private List<Account> createAccounts() {

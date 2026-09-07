@@ -2,6 +2,9 @@ package onlineshop.cli;
 
 import lombok.Getter;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 @Getter
 public enum Option implements CliOption {
     SHOW_PRODUCTS(1, "Show products"),
@@ -21,14 +24,9 @@ public enum Option implements CliOption {
         this.description = description;
     }
 
-    public static Option fromNumber(int number) {
-        Option option = null;
-
-        for (Option optionValue : Option.values()) {
-            if (optionValue.optionNumber == number) {
-                option = optionValue;
-            }
-        }
-        return option;
+    public static Optional<Option> fromNumber(int number) {
+        return Arrays.stream(values())
+                .filter(option -> option.optionNumber == number)
+                .findFirst();
     }
 }

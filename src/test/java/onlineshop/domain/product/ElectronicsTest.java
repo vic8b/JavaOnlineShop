@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.*;
 class ElectronicsTest {
     @Test
     void shouldBuilderCreateInstance() {
+        //Arrange
         Electronics testElectronics = Electronics.builder()
                 .id("1")
                 .name("testElectronics")
@@ -17,6 +18,7 @@ class ElectronicsTest {
                 .quantity(1)
                 .build();
 
+        //Assert
         assertThat(testElectronics)
                 .hasFieldOrPropertyWithValue("id", "1")
                 .hasFieldOrPropertyWithValue("name", "testElectronics")
@@ -26,6 +28,7 @@ class ElectronicsTest {
 
     @Test
     void shouldLombokGetterWorkSuccessfully() {
+        //Arrange
         Electronics testElectronics = Electronics.builder()
                 .id("1")
                 .name("testElectronics")
@@ -33,12 +36,14 @@ class ElectronicsTest {
                 .quantity(1)
                 .build();
 
+        //Assert
         assertThat(testElectronics.getName())
                 .isEqualTo("testElectronics");
     }
 
     @Test
     void shouldNegativePriceThrowException() {
+        //Act + Assert
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() ->
                         Electronics.builder()
@@ -59,6 +64,7 @@ class ElectronicsTest {
 
     @Test
     void shouldNegativeQuantityThrowException() {
+        //Act + Assert
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() ->
                         Electronics.builder()
@@ -79,6 +85,7 @@ class ElectronicsTest {
 
     @Test
     void shouldEqualsAndHashCodeCompareObjectsSuccessfully() {
+        //Arrange
         Electronics testElectronics = Electronics.builder()
                 .id("1")
                 .name("testSmartphone")
@@ -93,12 +100,14 @@ class ElectronicsTest {
                 .quantity(1)
                 .build();
 
+        //Assert
         assertThat(testElectronics)
                 .isEqualTo(testElectronics2);
     }
 
     @Test
     void shouldSuccessfullyIncreaseQuantity() {
+        //Arrange
         Electronics testElectronics = Electronics.builder()
                 .id("1")
                 .name("testSmartphone")
@@ -106,14 +115,17 @@ class ElectronicsTest {
                 .quantity(1)
                 .build();
 
+        //Act
         testElectronics.increaseQuantity(1);
 
+        //Assert
         assertThat(testElectronics.getQuantity())
                 .isEqualTo(2);
     }
 
     @Test
     void shouldSuccessfullyDecreaseQuantity() {
+        //Arrange
         Electronics testElectronics = Electronics.builder()
                 .id("1")
                 .name("testSmartphone")
@@ -121,14 +133,17 @@ class ElectronicsTest {
                 .quantity(1)
                 .build();
 
+        //Act
         testElectronics.decreaseQuantity(1);
 
+        //Assert
         assertThat(testElectronics.getQuantity())
                 .isEqualTo(0);
     }
 
     @Test
     void shouldThrowExceptionWhenAmountIsNegative() {
+        //Arrange
         Electronics testElectronics = Electronics.builder()
                 .id("1")
                 .name("testSmartphone")
@@ -136,7 +151,7 @@ class ElectronicsTest {
                 .quantity(1)
                 .build();
 
-
+        //Act + Assert
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> testElectronics.increaseQuantity(-1));
         assertThatExceptionOfType(IllegalArgumentException.class)
@@ -145,6 +160,7 @@ class ElectronicsTest {
 
     @Test
     void shouldThrowExceptionWhenDecreasingAmountExceedsQuantityOfProduct() {
+        //Arrange
         Electronics testElectronics = Electronics.builder()
                 .id("1")
                 .name("testSmartphone")
@@ -152,6 +168,7 @@ class ElectronicsTest {
                 .quantity(1)
                 .build();
 
+        //Act + Assert
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> testElectronics.decreaseQuantity(-10));
     }

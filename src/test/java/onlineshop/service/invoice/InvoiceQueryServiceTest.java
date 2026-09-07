@@ -39,6 +39,7 @@ class InvoiceQueryServiceTest {
 
     @Test
     void shouldFindInvoicesForAccount() {
+        //Arrange
         when(firstInvoice.getOrder()).thenReturn(firstOrder);
         when(secondInvoice.getOrder()).thenReturn(secondOrder);
 
@@ -53,17 +54,24 @@ class InvoiceQueryServiceTest {
 
         InvoiceQueryService invoiceQueryService = new InvoiceQueryService(invoiceRepository);
 
+        //Act
         List<Invoice> invoicesForAccount = invoiceQueryService.findInvoicesForAccount("ACC-1");
 
+        //Assert
         assertThat(invoicesForAccount).containsExactly(firstInvoice);
     }
 
     @Test
     void shouldReturnEmptyListWhenAccountHasNoInvoices() {
+        //Arrange
         when(invoiceRepository.findAll()).thenReturn(List.of());
 
         InvoiceQueryService invoiceQueryService = new InvoiceQueryService(invoiceRepository);
 
-        assertThat(invoiceQueryService.findInvoicesForAccount("ACC-1")).isEmpty();
+        //Act
+        List<Invoice> result = invoiceQueryService.findInvoicesForAccount("ACC-1");
+
+        //Assert
+        assertThat(result).isEmpty();
     }
 }

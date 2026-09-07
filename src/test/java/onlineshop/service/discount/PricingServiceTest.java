@@ -20,6 +20,7 @@ class PricingServiceTest {
 
     @Test
     void shouldCalculateFinalPriceAfterDiscount() {
+        //Arrange
         OrderItem firstOrderItem = mock(OrderItem.class);
         OrderItem secondOrderItem = mock(OrderItem.class);
 
@@ -33,8 +34,10 @@ class PricingServiceTest {
 
         PricingService pricingService = new PricingService(discountPolicy);
 
+        //Act
         BigDecimal finalPrice = pricingService.calculateFinalPrice(orderItems);
 
+        //Assert
         assertThat(finalPrice).isEqualByComparingTo("99.00");
 
         verify(discountPolicy).calculateDiscount(orderItems, new BigDecimal("110.00"));
@@ -42,6 +45,7 @@ class PricingServiceTest {
 
     @Test
     void shouldReturnRegularPriceWhenDiscountIsZero() {
+        //Arrange
         OrderItem orderItem = mock(OrderItem.class);
 
         when(orderItem.totalPrice()).thenReturn(new BigDecimal("100.00"));
@@ -52,8 +56,10 @@ class PricingServiceTest {
 
         PricingService pricingService = new PricingService(discountPolicy);
 
+        //Act
         BigDecimal finalPrice = pricingService.calculateFinalPrice(items);
 
+        //Assert
         assertThat(finalPrice).isEqualByComparingTo("100.00");
 
         verify(discountPolicy).calculateDiscount(items, new BigDecimal("100.00"));

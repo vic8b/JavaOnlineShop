@@ -6,24 +6,23 @@ import onlineshop.domain.order.Order;
 import onlineshop.exception.OrderAlreadyExistsException;
 import onlineshop.exception.OrderPersistenceException;
 import onlineshop.repo.file.OrderFileSerializationService;
+import onlineshop.repo.file.TextFileStorage;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
 
 @Slf4j
 public class FileOrderRepository implements OrderRepository {
     private final Map<UUID, Order> orderRepo = new ConcurrentHashMap<>();
     private final Path file;
+    private final TextFileStorage textFileStorage = new TextFileStorage();
     private final OrderFileSerializationService orderFileSerializationService = new OrderFileSerializationService();
 
     public FileOrderRepository(@NonNull Path file) {
         this.file = file;
+
         initializeFile();
         loadOrders();
     }
@@ -60,27 +59,16 @@ public class FileOrderRepository implements OrderRepository {
 
     private void initializeFile() {
         try {
-            Path parent = file.getParent();
-
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-
-            if (Files.exists(file) && Files.isDirectory(file)) {
-                throw new OrderPersistenceException("Expected a file, but path is directory");
-            }
-
-            if (Files.notExists(file)) {
-                Files.createFile(file);
-            }
+            textFileStorage.initialize(file);
         } catch (IOException e) {
             throw new OrderPersistenceException("Could not initialize orders file", e);
         }
     }
 
     private void loadOrders() {
-        try (Stream<String> lines = Files.lines(file, StandardCharsets.UTF_8)) {
-            lines.filter(line -> !line.isBlank())
+        try {
+            textFileStorage.readLines(file).stream()
+                    .filter(line -> !line.isBlank())
                     .map(orderFileSerializationService::decode)
                     .forEach(this::addLoadedOrder);
         } catch (IOException e) {
@@ -101,13 +89,7 @@ public class FileOrderRepository implements OrderRepository {
                 .toList();
 
         try {
-            Files.write(
-                    file,
-                    lines,
-                    StandardCharsets.UTF_8,
-                    StandardOpenOption.CREATE,
-                    StandardOpenOption.TRUNCATE_EXISTING
-            );
+            textFileStorage.writeLines(file, lines);
         } catch (IOException e) {
             throw new OrderPersistenceException("Could not save orders to file: " + file, e);
         }

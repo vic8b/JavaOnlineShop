@@ -14,7 +14,7 @@ public class InMemoryProductRepository implements ProductRepository {
 
     @Override
     public void add(@NonNull Product product) {
-        validateIfProductAlreadyExists(product);
+        addIfAbsent(product);
 
         log.info("Product {} has been added to the repository", product);
     }
@@ -25,7 +25,7 @@ public class InMemoryProductRepository implements ProductRepository {
     }
 
     @Override
-    public void changeSpecification(@NonNull String id, @NonNull Product product) {
+    public void updateProduct(@NonNull String id, @NonNull Product product) {
         if (!product.getId().equals(id)) throw new IllegalArgumentException("Product ids do not match");
 
         if (productsRepo.replace(id, product) == null) {
@@ -43,7 +43,7 @@ public class InMemoryProductRepository implements ProductRepository {
         return List.copyOf(productsRepo.values());
     }
 
-    private void validateIfProductAlreadyExists(Product product) {
+    private void addIfAbsent(Product product) {
         if (productsRepo.putIfAbsent(product.getId(), product) != null) {
             throw new ProductAlreadyExistsException(product.getId());
         }

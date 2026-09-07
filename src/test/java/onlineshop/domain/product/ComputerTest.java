@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ComputerTest {
     @Test
     void shouldBuilderCreateInstance() {
+        //Arrange
         Computer testComputer = Computer.builder()
                 .id("1")
                 .name("testComputer")
@@ -21,6 +22,7 @@ class ComputerTest {
                 .ram("64 GB")
                 .build();
 
+        //Assert
         assertThat(testComputer)
                 .hasFieldOrPropertyWithValue("id", "1")
                 .hasFieldOrPropertyWithValue("name", "testComputer")
@@ -32,6 +34,7 @@ class ComputerTest {
 
     @Test
     void shouldLombokGetterWorkSuccessfully() {
+        //Arrange
         Computer testComputer = Computer.builder()
                 .id("1")
                 .name("testComputer")
@@ -41,12 +44,14 @@ class ComputerTest {
                 .ram("64 GB")
                 .build();
 
+        //Assert
         assertThat(testComputer.getName())
                 .isEqualTo("testComputer");
     }
 
     @Test
     void shouldNegativePriceThrowException() {
+        //Act + Assert
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() ->
                         Computer.builder()
@@ -71,6 +76,7 @@ class ComputerTest {
 
     @Test
     void shouldNegativeQuantityThrowException() {
+        //Act + Assert
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() ->
                         Computer.builder()
@@ -95,6 +101,7 @@ class ComputerTest {
 
     @Test
     void shouldEqualsAndHashCodeCompareObjectsSuccessfully() {
+        //Arrange
         Computer testComputer = Computer.builder()
                 .id("1")
                 .name("testComputer")
@@ -113,12 +120,14 @@ class ComputerTest {
                 .ram("64 GB")
                 .build();
 
+        //Assert
         assertThat(testComputer)
                 .isEqualTo(testComputer2);
     }
 
     @Test
     void shouldSuccessfullyIncreaseQuantity() {
+        //Arrange
         Computer testComputer = Computer.builder()
                 .id("1")
                 .name("testComputer")
@@ -128,14 +137,17 @@ class ComputerTest {
                 .ram("64 GB")
                 .build();
 
+        //Act
         testComputer.increaseQuantity(1);
 
+        //Assert
         assertThat(testComputer.getQuantity())
                 .isEqualTo(2);
     }
 
     @Test
     void shouldSuccessfullyDecreaseQuantity() {
+        //Arrange
         Computer testComputer = Computer.builder()
                 .id("1")
                 .name("testComputer")
@@ -145,14 +157,17 @@ class ComputerTest {
                 .ram("64 GB")
                 .build();
 
+        //Act
         testComputer.decreaseQuantity(1);
 
+        //Assert
         assertThat(testComputer.getQuantity())
                 .isEqualTo(0);
     }
 
     @Test
     void shouldThrowExceptionWhenAmountIsNegative() {
+        //Arrange
         Computer testComputer = Computer.builder()
                 .id("1")
                 .name("testComputer")
@@ -162,7 +177,7 @@ class ComputerTest {
                 .ram("64 GB")
                 .build();
 
-
+        //Assert
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> testComputer.increaseQuantity(-1));
         assertThatExceptionOfType(IllegalArgumentException.class)
@@ -171,6 +186,7 @@ class ComputerTest {
 
     @Test
     void shouldThrowExceptionWhenDecreasingAmountExceedsQuantityOfProduct() {
+        //Arrange
         Computer testComputer = Computer.builder()
                 .id("1")
                 .name("testComputer")
@@ -180,6 +196,7 @@ class ComputerTest {
                 .ram("64 GB")
                 .build();
 
+        //Assert
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> testComputer.decreaseQuantity(-10));
     }

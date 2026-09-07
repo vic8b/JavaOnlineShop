@@ -1,7 +1,10 @@
 package onlineshop.service.product;
 
+import onlineshop.domain.cart.CartItem;
 import onlineshop.domain.product.Computer;
 import onlineshop.domain.product.Product;
+import onlineshop.exception.ProductNotFoundException;
+import onlineshop.exception.ProductUnavailableException;
 import onlineshop.repo.ProductRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,8 +18,7 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -82,7 +84,7 @@ class ProductInventoryServiceTest {
         productInventoryService.updateProduct("1", testComputer);
 
         //Assert
-        verify(productRepository).changeSpecification("1", testComputer);
+        verify(productRepository).updateProduct("1", testComputer);
     }
 
     @Test
@@ -177,5 +179,128 @@ class ProductInventoryServiceTest {
         assertThatThrownBy(() -> productInventoryService.changePrice("1", newPrice))
                 .hasMessage("Update price must be positive");
         verify(productRepository).findById("1");
+    }
+
+    @Test
+    void shouldSuccessfullyReserveStockForAllProducts() {
+        //Arrange
+        Computer secondComputer = Computer.builder()
+                .id("2")
+                .name("secondComputer")
+                .price(new BigDecimal("20"))
+                .quantity(5)
+                .cpu("AMD")
+                .ram("32 GB")
+                .build();
+
+        CartItem firstCartItem = mock(CartItem.class);
+        CartItem secondCartItem = mock(CartItem.class);
+
+        when(firstCartItem.getProduct()).thenReturn(testComputer);
+        when(firstCartItem.getQuantity()).thenReturn(1);
+
+        when(secondCartItem.getProduct()).thenReturn(secondComputer);
+        when(secondCartItem.getQuantity()).thenReturn(2);
+
+        when(productRepository.findById("1"))
+                .thenReturn(Optional.of(testComputer));
+        when(productRepository.findById("2"))
+                .thenReturn(Optional.of(secondComputer));
+
+        //Act
+        List<Product> reservedProducts = productInventoryService.reserveStock(List.of(firstCartItem, secondCartItem));
+
+        //Assert
+        assertThat(reservedProducts).containsExactly(testComputer, secondComputer);
+
+        assertThat(testComputer.getQuantity()).isZero();
+
+        assertThat(secondComputer.getQuantity()).isEqualTo(3);
+    }
+
+    @Test
+    void shouldNotDecreaseAnyStockWhenOneProductIsUnavailable() {
+        //Arrange
+        Computer firstComputer = Computer.builder()
+                .id("1")
+                .name("firstComputer")
+                .price(new BigDecimal("10"))
+                .quantity(5)
+                .cpu("Intel")
+                .ram("64 GB")
+                .build();
+
+        Computer secondComputer = Computer.builder()
+                .id("2")
+                .name("secondComputer")
+                .price(new BigDecimal("20"))
+                .quantity(1)
+                .cpu("AMD")
+                .ram("32 GB")
+                .build();
+
+        CartItem firstCartItem = mock(CartItem.class);
+        CartItem secondCartItem = mock(CartItem.class);
+
+        when(firstCartItem.getProduct()).thenReturn(firstComputer);
+        when(firstCartItem.getQuantity()).thenReturn(1);
+
+        when(secondCartItem.getProduct()).thenReturn(secondComputer);
+        when(secondCartItem.getQuantity()).thenReturn(2);
+
+        when(productRepository.findById("1"))
+                .thenReturn(Optional.of(firstComputer));
+        when(productRepository.findById("2"))
+                .thenReturn(Optional.of(secondComputer));
+
+        //Act + Assert
+        assertThatThrownBy(() -> productInventoryService.reserveStock(List.of(firstCartItem, secondCartItem)))
+                .isInstanceOf(ProductUnavailableException.class);
+
+        assertThat(firstComputer.getQuantity()).isEqualTo(5);
+        assertThat(secondComputer.getQuantity()).isEqualTo(1);
+    }
+
+    @Test
+    void shouldNotDecreaseStockWhenProductIsNotFoundDuringReservation() {
+        //Arrange
+        Computer firstComputer = Computer.builder()
+                .id("1")
+                .name("firstComputer")
+                .price(new BigDecimal("10"))
+                .quantity(5)
+                .cpu("Intel")
+                .ram("64 GB")
+                .build();
+
+        Computer secondComputer = Computer.builder()
+                .id("2")
+                .name("secondComputer")
+                .price(new BigDecimal("20"))
+                .quantity(5)
+                .cpu("AMD")
+                .ram("32 GB")
+                .build();
+
+        CartItem firstCartItem = mock(CartItem.class);
+        CartItem secondCartItem = mock(CartItem.class);
+
+        when(firstCartItem.getProduct()).thenReturn(firstComputer);
+        when(firstCartItem.getQuantity()).thenReturn(2);
+
+        when(secondCartItem.getProduct()).thenReturn(secondComputer);
+
+        when(productRepository.findById("1"))
+                .thenReturn(Optional.of(firstComputer));
+        when(productRepository.findById("2"))
+                .thenReturn(Optional.empty());
+
+        //Act + Assert
+        assertThatThrownBy(() -> productInventoryService.reserveStock(List.of(firstCartItem, secondCartItem)))
+                .isInstanceOf(ProductNotFoundException.class)
+                .hasMessage("Product with id 2 not found");
+
+        assertThat(firstComputer.getQuantity())
+                .isEqualTo(5);
     }
 }

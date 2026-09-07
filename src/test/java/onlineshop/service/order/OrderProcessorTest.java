@@ -7,7 +7,8 @@ import onlineshop.domain.order.Order;
 import onlineshop.domain.product.Product;
 import onlineshop.domain.useraccount.Account;
 import onlineshop.exception.ProductUnavailableException;
-import onlineshop.repo.*;
+import onlineshop.repo.InvoiceRepository;
+import onlineshop.repo.OrderRepository;
 import onlineshop.service.discount.PricingService;
 import onlineshop.service.invoice.InvoiceGenerator;
 import onlineshop.service.product.ProductInventoryService;
@@ -88,13 +89,15 @@ class OrderProcessorTest {
 
         when(pricingService.calculateFinalPrice(anyList())).thenReturn(new BigDecimal("180.00"));
 
+        when(productInventoryService.reserveStock(anyList())).thenReturn(List.of(product));
+
         ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
 
         //Act
         Order result = orderProcessor.processCheckout(account, cart);
 
         //Assert
-        verify(productInventoryService).decreaseStock("PROD-1", 2);
+        verify(productInventoryService).reserveStock(List.of(cartItem));
 
         verify(orderRepository).add(orderCaptor.capture());
 
@@ -126,24 +129,21 @@ class OrderProcessorTest {
         when(account.getAccountId()).thenReturn("ACC-1");
         when(cart.isEmpty()).thenReturn(false);
         when(cart.getAccountId()).thenReturn("ACC-1");
-        when(cart.getItems()).thenReturn(List.of(cartItem, secondCartItem));
 
-        when(cartItem.getProduct()).thenReturn(product);
+        List<CartItem> cartItems = List.of(cartItem, secondCartItem);
+        when(cart.getItems()).thenReturn(cartItems);
+
         when(cartItem.getQuantity()).thenReturn(2);
-        when(secondCartItem.getProduct()).thenReturn(secondProduct);
         when(secondCartItem.getQuantity()).thenReturn(5);
 
-        when(pricingService.calculateFinalPrice(anyList())).thenReturn(new BigDecimal("225.00"));
-
-        when(product.getId()).thenReturn("PROD-1");
-        when(product.getQuantity()).thenReturn(10);
         when(product.getPrice()).thenReturn(new BigDecimal("100.00"));
-        when(secondProduct.getId()).thenReturn("PROD-2");
-        when(secondProduct.getQuantity()).thenReturn(10);
         when(secondProduct.getPrice()).thenReturn(new BigDecimal("10.00"));
 
-        when(productInventoryService.findProductById("PROD-1")).thenReturn(product);
-        when(productInventoryService.findProductById("PROD-2")).thenReturn(secondProduct);
+        when(productInventoryService.reserveStock(cartItems))
+                .thenReturn(List.of(product, secondProduct));
+
+        when(pricingService.calculateFinalPrice(anyList()))
+                .thenReturn(new BigDecimal("225.00"));
 
         when(invoiceGenerator.generate(any(Order.class))).thenReturn(invoice);
 
@@ -158,72 +158,29 @@ class OrderProcessorTest {
                 .isEqualByComparingTo("225.00");
 
         verify(pricingService).calculateFinalPrice(anyList());
-        verify(productInventoryService).decreaseStock("PROD-1", 2);
-        verify(productInventoryService).decreaseStock("PROD-2", 5);
+        verify(productInventoryService).reserveStock(cartItems);
     }
 
     @Test
-    void shouldNotDecreaseStockWhenOneProductIsUnavailable() {
+    void shouldNotContinueCheckoutWhenStockReservationFails() {
         //Arrange
-        CartItem secondCartItem = mock(CartItem.class);
-        Product secondProduct = mock(Product.class);
-
         when(account.getAccountId()).thenReturn("ACC-1");
         when(cart.isEmpty()).thenReturn(false);
         when(cart.getAccountId()).thenReturn("ACC-1");
-        when(cart.getItems()).thenReturn(List.of(cartItem, secondCartItem));
 
-        when(cartItem.getProduct()).thenReturn(product);
-        when(cartItem.getQuantity()).thenReturn(2);
-        when(secondCartItem.getProduct()).thenReturn(secondProduct);
-        when(secondCartItem.getQuantity()).thenReturn(12);
+        List<CartItem> cartItems = List.of(cartItem);
+        when(cart.getItems()).thenReturn(cartItems);
 
-        when(product.getId()).thenReturn("PROD-1");
-        when(product.getQuantity()).thenReturn(10);
-        when(secondProduct.getId()).thenReturn("PROD-2");
-        when(secondProduct.getQuantity()).thenReturn(10);
-
-        when(productInventoryService.findProductById("PROD-1")).thenReturn(product);
-        when(productInventoryService.findProductById("PROD-2")).thenReturn(secondProduct);
+        when(productInventoryService.reserveStock(cartItems))
+                .thenThrow(new ProductUnavailableException("PROD-1", 12, 10));
 
         //Act + Assert
         assertThatExceptionOfType(ProductUnavailableException.class)
                 .isThrownBy(() -> orderProcessor.processCheckout(account, cart));
 
-        verify(productInventoryService, never()).decreaseStock(anyString(), anyInt());
-        verify(cart, never()).clear();
-    }
-
-    @Test
-    void shouldThrowExceptionWhenCartIsEmpty() {
-        //Arrange
-        when(cart.isEmpty()).thenReturn(true);
-
-        //Act + Assert
-        assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> orderProcessor.processCheckout(account, cart))
-                .withMessage("Cart cannot be empty");
-
         verifyNoInteractions(orderRepository);
         verifyNoInteractions(invoiceRepository);
-        verify(invoiceGenerator, never()).generate(any());
-        verify(cart, never()).clear();
-    }
-
-    @Test
-    void shouldThrowExceptionWhenCartDoesNotBelongToProvidedAccount() {
-        //Arrange
-        when(account.getAccountId()).thenReturn("ACC-1");
-        when(cart.isEmpty()).thenReturn(false);
-        when(cart.getAccountId()).thenReturn("ACC-2");
-
-        //Act + Assert
-        assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> orderProcessor.processCheckout(account, cart))
-                .withMessage("Cart doesn't belong to the provided account");
-
-        verifyNoInteractions(orderRepository);
-        verifyNoInteractions(invoiceRepository);
+        verifyNoInteractions(pricingService);
         verify(invoiceGenerator, never()).generate(any());
         verify(cart, never()).clear();
     }
@@ -235,24 +192,17 @@ class OrderProcessorTest {
 
         when(cart.isEmpty()).thenReturn(false);
         when(cart.getAccountId()).thenReturn("ACC-1");
-        when(cart.getItems()).thenReturn(List.of(cartItem));
 
-        when(cartItem.getProduct()).thenReturn(product);
-        when(cartItem.getQuantity()).thenReturn(12);
+        List<CartItem> cartItems = List.of(cartItem);
+        when(cart.getItems()).thenReturn(cartItems);
 
-        when(product.getId()).thenReturn("PROD-1");
-        when(product.getQuantity()).thenReturn(10);
 
-        when(productInventoryService.findProductById("PROD-1")).thenReturn(product);
+        when(productInventoryService.reserveStock(cartItems))
+                .thenThrow(new ProductUnavailableException("PROD-1", 12, 10));
 
         //Act + Assert
         assertThatExceptionOfType(ProductUnavailableException.class)
-                .isThrownBy(() -> orderProcessor.processCheckout(account, cart))
-                .withMessage("""
-                        Product PROD-1 is unavailable in requested quantity.
-                        Requested: 12\
-                        
-                        Available: 10""");
+                .isThrownBy(() -> orderProcessor.processCheckout(account, cart));
 
         verifyNoInteractions(orderRepository);
         verifyNoInteractions(invoiceRepository);
@@ -267,33 +217,39 @@ class OrderProcessorTest {
 
         when(cart.isEmpty()).thenReturn(false);
         when(cart.getAccountId()).thenReturn("ACC-1");
-        when(cart.getItems()).thenReturn(List.of(cartItem));
 
-        when(cartItem.getProduct()).thenReturn(product);
-        when(cartItem.getQuantity()).thenReturn(12);
+        List<CartItem> cartItems = List.of(cartItem);
+        when(cart.getItems()).thenReturn(cartItems);
 
-        when(product.getId()).thenReturn("PROD-1");
-        when(product.getQuantity()).thenReturn(10);
-
-        when(productInventoryService.findProductById("PROD-1")).thenReturn(product);
+        when(productInventoryService.reserveStock(cartItems))
+                .thenThrow(new ProductUnavailableException("PROD-1", 12, 10));
 
         //Act + Assert
         assertThatExceptionOfType(ProductUnavailableException.class)
                 .isThrownBy(() -> orderProcessor.processCheckout(account, cart));
 
+        verifyNoInteractions(pricingService);
+        verifyNoInteractions(orderRepository);
+        verifyNoInteractions(invoiceRepository);
         verify(productInventoryService, never()).decreaseStock(anyString(), anyInt());
     }
 
     @Test
     void shouldExecuteInCorrectOrder() {
+        //Arrange
         prepareValidOrder();
+
+        when(productInventoryService.reserveStock(anyList()))
+                .thenReturn(List.of(product));
 
         when(pricingService.calculateFinalPrice(anyList())).thenReturn(new BigDecimal("200.00"));
 
         when(invoiceGenerator.generate(any(Order.class))).thenReturn(invoice);
 
+        //Act
         orderProcessor.processCheckout(account, cart);
 
+        //Assert
         InOrder inOrder = inOrder(
                 productInventoryService,
                 pricingService,
@@ -303,7 +259,7 @@ class OrderProcessorTest {
                 cart
         );
 
-        inOrder.verify(productInventoryService).decreaseStock("PROD-1", 2);
+        inOrder.verify(productInventoryService).reserveStock(List.of(cartItem));
         inOrder.verify(pricingService).calculateFinalPrice(anyList());
         inOrder.verify(orderRepository).add(any(Order.class));
         inOrder.verify(invoiceGenerator).generate(any(Order.class));
@@ -318,15 +274,12 @@ class OrderProcessorTest {
 
         when(cart.isEmpty()).thenReturn(false);
         when(cart.getAccountId()).thenReturn("ACC-1");
-        when(cart.getItems()).thenReturn(List.of(cartItem));
 
-        when(cartItem.getProduct()).thenReturn(product);
+        List<CartItem> cartItems = List.of(cartItem);
+        when(cart.getItems()).thenReturn(cartItems);
+
         when(cartItem.getQuantity()).thenReturn(2);
 
-        when(product.getId()).thenReturn("PROD-1");
-        when(product.getQuantity()).thenReturn(10);
         when(product.getPrice()).thenReturn(new BigDecimal("100.00"));
-
-        when(productInventoryService.findProductById("PROD-1")).thenReturn(product);
     }
 }

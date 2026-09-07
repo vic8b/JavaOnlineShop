@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.*;
 class SmartphoneTest {
     @Test
     void shouldBuilderCreateInstance() {
+        //Arrange
         Smartphone testSmartphone = Smartphone.builder()
                 .id("1")
                 .name("testSmartphone")
@@ -19,6 +20,7 @@ class SmartphoneTest {
                 .batteryCapacity("1050 mAh")
                 .build();
 
+        //Assert
         assertThat(testSmartphone)
                 .hasFieldOrPropertyWithValue("id", "1")
                 .hasFieldOrPropertyWithValue("name", "testSmartphone")
@@ -30,6 +32,7 @@ class SmartphoneTest {
 
     @Test
     void shouldLombokGetterWorkSuccessfully() {
+        //Arrange
         Smartphone testSmartphone = Smartphone.builder()
                 .id("1")
                 .name("testSmartphone")
@@ -39,12 +42,14 @@ class SmartphoneTest {
                 .batteryCapacity("1050 mAh")
                 .build();
 
+        //Assert
         assertThat(testSmartphone.getName())
                 .isEqualTo("testSmartphone");
     }
 
     @Test
     void shouldNegativePriceThrowException() {
+        //Act + Assert
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() ->
                         Smartphone.builder()
@@ -73,6 +78,7 @@ class SmartphoneTest {
 
     @Test
     void shouldNegativeQuantityThrowException() {
+        //Act + Assert
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() ->
                         Smartphone.builder()
@@ -101,6 +107,7 @@ class SmartphoneTest {
 
     @Test
     void shouldBuilderCreateListOfAccessoriesSuccessfully() {
+        //Arrange
         Smartphone testSmartphone = Smartphone.builder()
                 .id("1")
                 .name("testSmartphone")
@@ -112,6 +119,7 @@ class SmartphoneTest {
                 .accessory("charger")
                 .build();
 
+        //Assert
         assertThat(testSmartphone.getAccessories())
                 .contains("case")
                 .contains("charger");
@@ -119,6 +127,7 @@ class SmartphoneTest {
 
     @Test
     void shouldEqualsAndHashCodeCompareObjectsSuccessfully() {
+        //Arrange
         Smartphone testSmartphone = Smartphone.builder()
                 .id("1")
                 .name("testSmartphone")
@@ -141,12 +150,14 @@ class SmartphoneTest {
                 .accessory("charger")
                 .build();
 
+        //Assert
         assertThat(testSmartphone)
                 .isEqualTo(testSmartphone2);
     }
 
     @Test
     void shouldSuccessfullyIncreaseQuantity() {
+        //Arrange
         Smartphone testSmartphone = Smartphone.builder()
                 .id("1")
                 .name("testSmartphone")
@@ -158,14 +169,17 @@ class SmartphoneTest {
                 .accessory("charger")
                 .build();
 
+        //Act
         testSmartphone.increaseQuantity(1);
 
+        //Assert
         assertThat(testSmartphone.getQuantity())
                 .isEqualTo(2);
     }
 
     @Test
     void shouldSuccessfullyDecreaseQuantity() {
+        //Arrange
         Smartphone testSmartphone = Smartphone.builder()
                 .id("1")
                 .name("testSmartphone")
@@ -177,14 +191,17 @@ class SmartphoneTest {
                 .accessory("charger")
                 .build();
 
+        //Act
         testSmartphone.decreaseQuantity(1);
 
+        //Assert
         assertThat(testSmartphone.getQuantity())
                 .isEqualTo(0);
     }
 
     @Test
     void shouldThrowExceptionWhenAmountIsNegative() {
+        //Arrange
         Smartphone testSmartphone = Smartphone.builder()
                 .id("1")
                 .name("testSmartphone")
@@ -196,7 +213,7 @@ class SmartphoneTest {
                 .accessory("charger")
                 .build();
 
-
+        //Act + Assert
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> testSmartphone.increaseQuantity(-1));
         assertThatExceptionOfType(IllegalArgumentException.class)
@@ -205,6 +222,7 @@ class SmartphoneTest {
 
     @Test
     void shouldThrowExceptionWhenDecreasingAmountExceedsQuantityOfProduct() {
+        //Arrange
         Smartphone testSmartphone = Smartphone.builder()
                 .id("1")
                 .name("testSmartphone")
@@ -216,6 +234,7 @@ class SmartphoneTest {
                 .accessory("charger")
                 .build();
 
+        //Act + Assert
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> testSmartphone.decreaseQuantity(-10));
     }

@@ -12,10 +12,7 @@ public class OrderValuePercentageDiscount implements DiscountPolicy {
     private final BigDecimal percentage;
 
     public OrderValuePercentageDiscount(@NonNull BigDecimal minimumValue, @NonNull BigDecimal percentage) {
-        if (minimumValue.signum() < 0) throw new IllegalArgumentException("Minimum value cannot be negative");
-        if (percentage.signum() <= 0 || percentage.compareTo(new BigDecimal("100")) > 0) {
-            throw new IllegalArgumentException("Percentage must be between 0 and 100");
-        }
+        validateDiscountParameters(minimumValue, percentage);
 
         this.minimumValue = minimumValue;
         this.percentage = percentage;
@@ -29,5 +26,14 @@ public class OrderValuePercentageDiscount implements DiscountPolicy {
 
         return regularPrice.multiply(percentage)
                 .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+    }
+
+    private static void validateDiscountParameters(BigDecimal minimumValue, BigDecimal percentage) {
+        if (minimumValue.signum() < 0) {
+            throw new IllegalArgumentException("Minimum value cannot be negative");
+        }
+        if (percentage.signum() <= 0 || percentage.compareTo(new BigDecimal("100")) > 0) {
+            throw new IllegalArgumentException("Percentage must be between 0 and 100");
+        }
     }
 }

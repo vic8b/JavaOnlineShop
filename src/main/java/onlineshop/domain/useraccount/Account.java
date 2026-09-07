@@ -20,9 +20,15 @@ public class Account {
     // Design pattern: Builder
     @Builder
     public Account(@NonNull String accountId, @NonNull String firstName, @NonNull String lastName, @NonNull Email email) {
-        if (accountId.isBlank()) throw new IllegalArgumentException("ID cannot be blank");
-        if (firstName.isBlank()) throw new IllegalArgumentException("First name cannot be blank");
-        if (lastName.isBlank()) throw new IllegalArgumentException("Last name cannot be blank");
+        if (accountId.isBlank()) {
+            throw new IllegalArgumentException("ID cannot be blank");
+        }
+        if (firstName.isBlank()) {
+            throw new IllegalArgumentException("First name cannot be blank");
+        }
+        if (lastName.isBlank()) {
+            throw new IllegalArgumentException("Last name cannot be blank");
+        }
 
         this.accountId = accountId;
         this.firstName = firstName;

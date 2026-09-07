@@ -64,8 +64,10 @@ class FileOrderRepositoryTest {
 
     @Test
     void shouldCreateFilesWhenItDoesNotExist() {
+        //Arrange
         Path file = tempDir.resolve("orders.txt");
 
+        //Act + Assert
         assertThat(file).doesNotExist();
 
         new FileOrderRepository(file);
@@ -77,10 +79,13 @@ class FileOrderRepositoryTest {
 
     @Test
     void shouldAddOrderToRepository() {
+        //Arrange
         createRepository();
 
+        //Act
         orderRepository.add(order);
 
+        //Assert
         assertThat(orderRepository.findAll())
                 .containsExactly(order);
 
@@ -91,14 +96,17 @@ class FileOrderRepositoryTest {
 
     @Test
     void shouldLoadPreviouslySavedOrder() {
+        //Arrange
         createRepository();
 
+        //Act
         orderRepository.add(order);
 
         reader = new FileOrderRepository(file);
 
         Order restoredOrder = reader.findById(order.getOrderId()).orElseThrow();
 
+        //Assert
         assertThat(restoredOrder).isEqualTo(order);
 
         assertThat(restoredOrder.getTotalPrice()).isEqualByComparingTo("90.00");
@@ -106,22 +114,26 @@ class FileOrderRepositoryTest {
 
     @Test
     void shouldLoadAllPreviouslySavedOrders() {
+        //Arrange
         createRepository();
 
         Order secondOrder = createOrderWithId(UUID.randomUUID());
 
+        //Act
         orderRepository.add(order);
         orderRepository.add(secondOrder);
 
         reader = new FileOrderRepository(file);
 
+        //Assert
         assertThat(reader.findAll())
                 .contains(order)
                 .contains(secondOrder);
     }
 
     @Test
-    void shouldRejectDuplicateOrderId () {
+    void shouldRejectDuplicateOrderId() {
+        //Arrange
         createRepository();
 
         UUID duplicatedId = UUID.randomUUID();
@@ -129,8 +141,10 @@ class FileOrderRepositoryTest {
         Order originalOrder = createOrderWithId(duplicatedId);
         Order orderDuplicate = createOrderWithId(duplicatedId);
 
+        //Act
         orderRepository.add(originalOrder);
 
+        //Assert
         assertThatThrownBy(() -> orderRepository.add(orderDuplicate))
                 .isInstanceOf(OrderAlreadyExistsException.class)
                 .hasMessage("Order with id " + orderDuplicate.getOrderId() + " already exists");

@@ -179,8 +179,9 @@ separating storage from presentation.
 The application provides `OrderProcessingService`, which exposes both synchronous and asynchronous order processing 
 while reusing the same `OrderProcessor` implementation.
 
-The application assumes a single `OrderProcessor` instance. A synchronized section protects stock validation, 
-`OrderItem` creation and stock reduction, ensuring that these operations execute atomically during checkout.
+Stock validation and stock reduction are performed atomically in `ProductInventoryService`.
+A shared stock lock protects `reserveStock()`, `increaseStock()` and `decreaseStock()`, ensuring that concurrent stock
+operations cannot interfere with each other.
 
 The `process()` method executes synchronously on the calling thread.
 

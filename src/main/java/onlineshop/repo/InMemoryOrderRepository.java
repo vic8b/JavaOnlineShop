@@ -13,7 +13,7 @@ public class InMemoryOrderRepository implements OrderRepository {
     private final Map<UUID, Order> orderRepo = new ConcurrentHashMap<>();
 
     @Override
-    public synchronized void add(@NonNull Order order) {
+    public void add(@NonNull Order order) {
         validateIfOrderAlreadyExists(order);
 
         log.info("Order: {} has been added to the repository", order.getOrderId());
