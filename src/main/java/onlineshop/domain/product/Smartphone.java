@@ -15,6 +15,7 @@ public class Smartphone extends Product {
 
     private final List<String> accessories;
 
+    // Design pattern: Builder
     @Builder
     public Smartphone(@NonNull String id, @NonNull String name, @NonNull BigDecimal price, int quantity, @NonNull String color, @NonNull String batteryCapacity, @Singular List<String> accessories) {
         super(id, name, price, quantity);

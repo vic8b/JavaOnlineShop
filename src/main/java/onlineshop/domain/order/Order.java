@@ -48,6 +48,7 @@ public class Order {
         this.orderStatus = orderStatus;
     }
 
+    // Design pattern: Builder
     @Builder
     public Order(@NonNull Account account, @NonNull List<OrderItem> items, @NonNull BigDecimal totalPrice, @NonNull Instant orderDate) {
         if (items.isEmpty()) throw new IllegalArgumentException("Order must contain at least one item");

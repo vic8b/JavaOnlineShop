@@ -8,6 +8,9 @@ import onlineshop.domain.useraccount.Account;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
+// Design pattern: Facade
+// Provides a simplified synchronous/asynchronous entry point to the checkout workflow.
+
 public class OrderProcessingService implements AutoCloseable {
     private final OrderProcessor orderProcessor;
     private final ExecutorService executorService;
