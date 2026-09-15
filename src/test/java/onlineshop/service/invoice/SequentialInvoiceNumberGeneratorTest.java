@@ -111,8 +111,6 @@ class SequentialInvoiceNumberGeneratorTest {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new RuntimeException(e);
-            } finally {
-                executor.shutdown();
             }
         }
     }
