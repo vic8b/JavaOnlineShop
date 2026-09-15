@@ -13,7 +13,7 @@ public abstract class Product {
     @NonNull
     private final String name;
     @NonNull
-    private final BigDecimal price;
+    private BigDecimal price;
     private int quantity;
 
     protected Product(@NonNull String id, @NonNull String name, @NonNull BigDecimal price, int quantity) {
@@ -32,10 +32,16 @@ public abstract class Product {
     }
 
     public void decreaseQuantity(int amount) {
-        if (amount < 0) throw new IllegalArgumentException("Amount must be positive");
+        if (amount <= 0) throw new IllegalArgumentException("Amount must be positive");
         if (amount > quantity) throw new IllegalArgumentException("Not enough products in stock");
 
         quantity -= amount;
+    }
+
+    public void changePrice(@NonNull BigDecimal newPrice) {
+        if (newPrice.signum() <= 0) throw new IllegalArgumentException("Update price must be positive");
+
+        price = newPrice.setScale(2, RoundingMode.HALF_UP);
     }
 
     private static void validate(BigDecimal price, int quantity) {
