@@ -9,6 +9,8 @@ public enum Option implements CliOption {
     SHOW_CART(3, "Show cart"),
     CHECKOUT(4, "Checkout"),
     ACCOUNT_INFO(5, "Account info"),
+    SHOW_ORDERS(6, "Show orders"),
+    SHOW_INVOICES(7, "Show invoices"),
     EXIT(0, "Exit");
 
     private final int optionNumber;

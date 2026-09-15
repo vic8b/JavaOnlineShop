@@ -9,21 +9,24 @@ import onlineshop.domain.product.Electronics;
 import onlineshop.domain.product.Smartphone;
 import onlineshop.domain.useraccount.Account;
 import onlineshop.repo.*;
-import onlineshop.service.invoice.InvoiceGenerator;
-import onlineshop.service.invoice.InvoiceNumberGenerator;
-import onlineshop.service.invoice.InvoiceService;
-import onlineshop.service.invoice.SequentialInvoiceNumberGenerator;
+import onlineshop.service.invoice.*;
 import onlineshop.service.order.OrderProcessor;
+import onlineshop.service.order.OrderQueryService;
 import onlineshop.service.product.ProductManager;
 
 import java.math.BigDecimal;
+import java.nio.file.Path;
 
 public class ShopApp {
     public static void main(String[] args) {
-        InvoiceNumberGenerator invoiceNumberGenerator = new SequentialInvoiceNumberGenerator();
         ProductRepository productRepository = new InMemoryProductRepository();
-        OrderRepository orderRepository = new InMemoryOrderRepository();
-        InvoiceRepository invoiceRepository = new InMemoryInvoiceRepository();
+//        OrderRepository orderRepository = new InMemoryOrderRepository();
+        OrderRepository orderRepository = new FileOrderRepository(Path.of("data/orders/orders.txt"));
+//        InvoiceRepository invoiceRepository = new InMemoryInvoiceRepository();
+        InvoiceRepository invoiceRepository = new FileInvoiceRepository(
+                Path.of("data/invoices/invoices.txt"),
+                orderRepository);
+        InvoiceNumberGenerator invoiceNumberGenerator = new SequentialInvoiceNumberGenerator(invoiceRepository.findAll());
         InvoiceGenerator invoiceService = new InvoiceService(invoiceNumberGenerator);
         ProductManager productManager = new ProductManager(productRepository);
         OrderProcessor orderProcessor = new OrderProcessor(
@@ -34,12 +37,23 @@ public class ShopApp {
         );
         Account account = createTestAccount();
         Cart cart = new Cart(account.getAccountId());
+        OrderQueryService orderQueryService = new OrderQueryService(orderRepository);
+        InvoiceQueryService invoiceQueryService = new InvoiceQueryService(invoiceRepository);
         ConsolePrinter consolePrinter = new ConsolePrinter();
         DataReader dataReader = new DataReader(consolePrinter);
 
         addTestProducts(productManager);
 
-        new ShopCli(productManager, orderProcessor, account, cart, dataReader, consolePrinter).run();
+        new ShopCli(
+                productManager,
+                orderProcessor,
+                account,
+                cart,
+                orderQueryService,
+                invoiceQueryService,
+                dataReader,
+                consolePrinter
+        ).run();
     }
 
     private static Account createTestAccount() {

@@ -2,12 +2,15 @@ package onlineshop.cli;
 
 import onlineshop.domain.cart.Cart;
 import onlineshop.domain.cart.CartItem;
+import onlineshop.domain.invoice.Invoice;
 import onlineshop.domain.order.Order;
 import onlineshop.domain.product.Product;
 import onlineshop.domain.useraccount.Account;
 import onlineshop.exception.ProductNotFoundException;
 import onlineshop.exception.ProductUnavailableException;
+import onlineshop.service.invoice.InvoiceQueryService;
 import onlineshop.service.order.OrderProcessor;
+import onlineshop.service.order.OrderQueryService;
 import onlineshop.service.product.ProductManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,6 +38,12 @@ class ShopCliTest {
     private Cart cart;
 
     @Mock
+    private OrderQueryService orderQueryService;
+
+    @Mock
+    private InvoiceQueryService invoiceQueryService;
+
+    @Mock
     private DataReader dataReader;
 
     @Mock
@@ -49,6 +58,8 @@ class ShopCliTest {
                 orderProcessor,
                 account,
                 cart,
+                orderQueryService,
+                invoiceQueryService,
                 dataReader,
                 consolePrinter
         );
@@ -328,6 +339,96 @@ class ShopCliTest {
         //Assert
         verify(consolePrinter).print("Account info:");
         verify(consolePrinter).printAccount(account);
+        verify(consolePrinter).print("End of program");
+    }
+
+    //SHOW_ORDERS
+    @Test
+    void shouldShowOrdersAndExit() {
+        //Arrange
+        Order order = mock(Order.class);
+
+        when(dataReader.getOptionInt())
+                .thenReturn(
+                        Option.SHOW_ORDERS.getOptionNumber(),
+                        Option.EXIT.getOptionNumber()
+                );
+
+        when(orderQueryService.findOrdersForAccount(account.getAccountId()))
+                .thenReturn(List.of(order));
+
+        //Act
+        shopCli.run();
+
+        //Assert
+        verify(consolePrinter).print("Orders:");
+        verify(consolePrinter).printOrder(order);
+        verify(consolePrinter).print("End of program");
+    }
+
+    @Test
+    void shouldInformThatOrdersAreEmpty() {
+        //Arrange
+        when(dataReader.getOptionInt())
+                .thenReturn(
+                        Option.SHOW_ORDERS.getOptionNumber(),
+                        Option.EXIT.getOptionNumber()
+                );
+
+        when(orderQueryService.findOrdersForAccount(account.getAccountId()))
+                .thenReturn(List.of());
+
+        //Act
+        shopCli.run();
+
+        //Assert
+        verify(consolePrinter).print("Orders:");
+        verify(consolePrinter).print("No orders found");
+        verify(consolePrinter).print("End of program");
+    }
+
+    //SHOW_INVOICES
+    @Test
+    void shouldShowInvoicesAndExit() {
+        //Arrange
+        Invoice invoice = mock(Invoice.class);
+
+        when(dataReader.getOptionInt())
+                .thenReturn(
+                        Option.SHOW_INVOICES.getOptionNumber(),
+                        Option.EXIT.getOptionNumber()
+                );
+
+        when(invoiceQueryService.findInvoicesForAccount(account.getAccountId()))
+                .thenReturn(List.of(invoice));
+
+        //Act
+        shopCli.run();
+
+        //Assert
+        verify(consolePrinter).print("Invoices:");
+        verify(consolePrinter).printInvoice(invoice);
+        verify(consolePrinter).print("End of program");
+    }
+
+    @Test
+    void shouldInformThatInvoicesAreEmpty() {
+        //Arrange
+        when(dataReader.getOptionInt())
+                .thenReturn(
+                        Option.SHOW_INVOICES.getOptionNumber(),
+                        Option.EXIT.getOptionNumber()
+                );
+
+        when(invoiceQueryService.findInvoicesForAccount(account.getAccountId()))
+                .thenReturn(List.of());
+
+        //Act
+        shopCli.run();
+
+        //Assert
+        verify(consolePrinter).print("Invoices:");
+        verify(consolePrinter).print("No invoices found");
         verify(consolePrinter).print("End of program");
     }
 }
