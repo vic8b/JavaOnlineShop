@@ -136,7 +136,7 @@ class InMemoryProductRepositoryTest {
     }
 
     @Test
-    void shouldFindAllReturnAllProducts() {
+    void shouldFindAllProducts() {
         Smartphone smartphone = Smartphone.builder()
                 .id("2")
                 .name("testSmartphone")
