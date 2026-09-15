@@ -13,7 +13,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.math.BigDecimal;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -58,6 +58,7 @@ class FileInvoiceRepositoryTest {
         invoice = Invoice.builder()
                 .invoiceNumber("INV-2026/1")
                 .order(order)
+                .issueDate(Instant.now())
                 .build();
     }
 
@@ -107,6 +108,7 @@ class FileInvoiceRepositoryTest {
         Invoice secondInvoice = Invoice.builder()
                 .invoiceNumber("INV-2026/2")
                 .order(secondOrder)
+                .issueDate(Instant.now())
                 .build();
 
         invoiceRepository.add(invoice);
@@ -126,6 +128,7 @@ class FileInvoiceRepositoryTest {
         Invoice invoiceDuplicate = Invoice.builder()
                 .invoiceNumber("INV-2026/1")
                 .order(order)
+                .issueDate(Instant.now())
                 .build();
 
         invoiceRepository.add(invoice);
@@ -147,8 +150,8 @@ class FileInvoiceRepositoryTest {
 
         UUID mockId = UUID.randomUUID();
 
-        Invoice originalInvoice = new Invoice(mockId, "INV-2026/1", order, LocalDateTime.now());
-        Invoice duplicateTestInvoice = new Invoice(mockId, "INV-2026/2", order, LocalDateTime.now());
+        Invoice originalInvoice = new Invoice(mockId, "INV-2026/1", order, Instant.now());
+        Invoice duplicateTestInvoice = new Invoice(mockId, "INV-2026/2", order, Instant.now());
 
         invoiceRepository.add(originalInvoice);
 
@@ -197,6 +200,7 @@ class FileInvoiceRepositoryTest {
         Invoice secondInvoice = Invoice.builder()
                 .invoiceNumber("INV-2026/2")
                 .order(secondOrder)
+                .issueDate(Instant.now())
                 .build();
 
         invoiceRepository.add(invoice);
@@ -253,6 +257,7 @@ class FileInvoiceRepositoryTest {
         return Order.builder()
                 .account(account)
                 .items(List.of(orderItem))
+                .orderDate(Instant.now())
                 .build();
     }
 
@@ -268,6 +273,7 @@ class FileInvoiceRepositoryTest {
         return Order.builder()
                 .account(account)
                 .items(List.of(secondOrderItem))
+                .orderDate(Instant.now())
                 .build();
     }
 

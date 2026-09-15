@@ -3,6 +3,7 @@ package onlineshop.service.invoice;
 import lombok.NonNull;
 import onlineshop.domain.invoice.Invoice;
 
+import java.time.Clock;
 import java.time.Year;
 import java.util.Collection;
 
@@ -12,8 +13,11 @@ public class SequentialInvoiceNumberGenerator implements InvoiceNumberGenerator 
     private final int year;
     private int counter;
 
-    public SequentialInvoiceNumberGenerator(@NonNull Collection<Invoice> existingInvoices) {
-        this.year = Year.now().getValue();
+    public SequentialInvoiceNumberGenerator(
+            @NonNull Collection<Invoice> existingInvoices,
+            @NonNull Clock clock
+            ) {
+        this.year = Year.now(clock).getValue();
         this.counter = determineNextCounter(existingInvoices);
     }
 

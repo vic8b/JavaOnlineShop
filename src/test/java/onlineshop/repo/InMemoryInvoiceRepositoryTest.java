@@ -9,7 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
@@ -32,6 +32,7 @@ class InMemoryInvoiceRepositoryTest {
         invoice = Invoice.builder()
                 .invoiceNumber("INV-2026/1")
                 .order(order)
+                .issueDate(Instant.now())
                 .build();
     }
 
@@ -53,6 +54,7 @@ class InMemoryInvoiceRepositoryTest {
         Invoice invoiceDuplicate = Invoice.builder()
                 .invoiceNumber("INV-2026/1")
                 .order(order)
+                .issueDate(Instant.now())
                 .build();
 
         invoiceRepository.add(invoice);
@@ -72,8 +74,8 @@ class InMemoryInvoiceRepositoryTest {
     void shouldRejectDuplicateInvoiceId() {
         UUID mockId = UUID.randomUUID();
 
-        Invoice originalInvoice = new Invoice(mockId, "INV-2026/1", order, LocalDateTime.now());
-        Invoice duplicateTestInvoice = new Invoice(mockId, "INV-2026/2", order, LocalDateTime.now());
+        Invoice originalInvoice = new Invoice(mockId, "INV-2026/1", order, Instant.now());
+        Invoice duplicateTestInvoice = new Invoice(mockId, "INV-2026/2", order, Instant.now());
 
         invoiceRepository.add(originalInvoice);
 
@@ -117,6 +119,7 @@ class InMemoryInvoiceRepositoryTest {
         Invoice secondInvoice = Invoice.builder()
                 .invoiceNumber("INV-2026/2")
                 .order(secondOrder)
+                .issueDate(Instant.now())
                 .build();
 
         invoiceRepository.add(invoice);

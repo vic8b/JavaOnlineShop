@@ -8,7 +8,7 @@ import onlineshop.domain.useraccount.Account;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,7 +25,7 @@ public class Order {
     @NonNull
     private final BigDecimal totalPrice;
     @NonNull
-    private final LocalDateTime orderDate;
+    private final Instant orderDate;
     @NonNull
     private OrderStatus orderStatus;
 
@@ -33,7 +33,7 @@ public class Order {
             @NonNull UUID orderId,
             @NonNull Account account,
             @NonNull List<OrderItem> items,
-            @NonNull LocalDateTime orderDate,
+            @NonNull Instant orderDate,
             @NonNull OrderStatus orderStatus
     ) {
         if (items.isEmpty()) throw new IllegalArgumentException("Order must contain at least one item");
@@ -47,14 +47,14 @@ public class Order {
     }
 
     @Builder
-    public Order(@NonNull Account account, @NonNull List<OrderItem> items) {
+    public Order(@NonNull Account account, @NonNull List<OrderItem> items, @NonNull Instant orderDate) {
         if (items.isEmpty()) throw new IllegalArgumentException("Order must contain at least one item");
 
         this.orderId = UUID.randomUUID();
         this.account = account;
         this.items = List.copyOf(items);
         this.totalPrice = calculateTotalPrice();
-        this.orderDate = LocalDateTime.now();
+        this.orderDate = orderDate;
         this.orderStatus = OrderStatus.PENDING;
     }
 

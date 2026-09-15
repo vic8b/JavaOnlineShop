@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -153,7 +153,7 @@ public class FileInvoiceRepository implements InvoiceRepository {
             UUID invoiceId = UUID.fromString(parts[0]);
             String invoiceNumber = parts[1];
             UUID orderId = UUID.fromString(parts[2]);
-            LocalDateTime invoiceIssueDate = LocalDateTime.parse(parts[3]);
+            Instant invoiceIssueDate = Instant.parse(parts[3]);
 
             Order order = orderRepository.findById(orderId)
                     .orElseThrow(() -> new InvoicePersistenceException(

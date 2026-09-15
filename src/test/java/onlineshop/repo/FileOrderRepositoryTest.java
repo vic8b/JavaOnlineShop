@@ -13,7 +13,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.math.BigDecimal;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -161,6 +161,7 @@ class FileOrderRepositoryTest {
         return Order.builder()
                 .account(account)
                 .items(items)
+                .orderDate(Instant.now())
                 .build();
     }
 
@@ -169,7 +170,7 @@ class FileOrderRepositoryTest {
                 orderId,
                 account,
                 items,
-                LocalDateTime.now(),
+                Instant.now(),
                 OrderStatus.PENDING
         );
     }

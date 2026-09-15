@@ -6,6 +6,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -19,6 +21,7 @@ class InvoiceTest {
         Invoice invoice = Invoice.builder()
                 .invoiceNumber("INV-1")
                 .order(order)
+                .issueDate(Instant.now())
                 .build();
 
         assertThat(invoice.getInvoiceNumber()).isEqualTo("INV-1");
@@ -31,6 +34,7 @@ class InvoiceTest {
         assertThatThrownBy(() -> Invoice.builder()
                 .invoiceNumber("")
                 .order(order)
+                .issueDate(Instant.now())
                 .build())
                 .hasMessage("Invoice number cannot be blank")
                 .isInstanceOf(IllegalArgumentException.class);

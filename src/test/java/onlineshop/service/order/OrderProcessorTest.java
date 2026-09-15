@@ -11,15 +11,18 @@ import onlineshop.repo.InvoiceRepository;
 import onlineshop.repo.OrderRepository;
 import onlineshop.service.invoice.InvoiceGenerator;
 import onlineshop.service.product.ProductManager;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,8 +59,22 @@ class OrderProcessorTest {
     @Mock
     Invoice invoice;
 
-    @InjectMocks
+    Instant fixedInstant = Instant.parse("2026-08-02T12:00:00Z");
+
+    Clock clock = Clock.fixed(fixedInstant, ZoneOffset.UTC);
+
     OrderProcessor orderProcessor;
+
+    @BeforeEach
+    void setup() {
+        orderProcessor = new OrderProcessor(
+                productManager,
+                orderRepository,
+                invoiceRepository,
+                invoiceGenerator,
+                clock
+        );
+    }
 
     @Test
     void shouldSuccessfullyCreateOrder() {
@@ -87,6 +104,7 @@ class OrderProcessorTest {
         assertThat(result.getItems().getFirst().getQuantity()).isEqualTo(2);
         assertThat(result.getItems().getFirst().getUnitPrice()).isEqualByComparingTo("100.00");
         assertThat(result.getTotalPrice()).isEqualByComparingTo("200.00");
+        assertThat(result.getOrderDate()).isEqualTo(fixedInstant);
 
         verify(invoiceGenerator).generate(result);
         verify(invoiceRepository).add(invoice);

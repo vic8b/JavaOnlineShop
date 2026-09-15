@@ -16,9 +16,13 @@ import onlineshop.service.product.ProductManager;
 
 import java.math.BigDecimal;
 import java.nio.file.Path;
+import java.time.Clock;
+import java.time.ZoneId;
 
 public class ShopApp {
     public static void main(String[] args) {
+        Clock clock = Clock.systemUTC();
+        ZoneId zoneId = ZoneId.of("Europe/Warsaw");
         ProductRepository productRepository = new InMemoryProductRepository();
 //        OrderRepository orderRepository = new InMemoryOrderRepository();
         OrderRepository orderRepository = new FileOrderRepository(Path.of("data/orders/orders.txt"));
@@ -26,20 +30,23 @@ public class ShopApp {
         InvoiceRepository invoiceRepository = new FileInvoiceRepository(
                 Path.of("data/invoices/invoices.txt"),
                 orderRepository);
-        InvoiceNumberGenerator invoiceNumberGenerator = new SequentialInvoiceNumberGenerator(invoiceRepository.findAll());
-        InvoiceGenerator invoiceService = new InvoiceService(invoiceNumberGenerator);
+        InvoiceNumberGenerator invoiceNumberGenerator =
+                new SequentialInvoiceNumberGenerator(invoiceRepository.findAll(), clock);
+
+        InvoiceGenerator invoiceService = new InvoiceService(invoiceNumberGenerator, clock);
         ProductManager productManager = new ProductManager(productRepository);
         OrderProcessor orderProcessor = new OrderProcessor(
                 productManager,
                 orderRepository,
                 invoiceRepository,
-                invoiceService
+                invoiceService,
+                clock
         );
         Account account = createTestAccount();
         Cart cart = new Cart(account.getAccountId());
         OrderQueryService orderQueryService = new OrderQueryService(orderRepository);
         InvoiceQueryService invoiceQueryService = new InvoiceQueryService(invoiceRepository);
-        ConsolePrinter consolePrinter = new ConsolePrinter();
+        ConsolePrinter consolePrinter = new ConsolePrinter(zoneId);
         DataReader dataReader = new DataReader(consolePrinter);
 
         addTestProducts(productManager);
