@@ -9,6 +9,7 @@ import onlineshop.domain.useraccount.Account;
 import onlineshop.exception.ProductUnavailableException;
 import onlineshop.repo.InvoiceRepository;
 import onlineshop.repo.OrderRepository;
+import onlineshop.service.discount.PricingService;
 import onlineshop.service.invoice.InvoiceGenerator;
 import onlineshop.service.product.ProductManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,6 +60,9 @@ class OrderProcessorTest {
     @Mock
     Invoice invoice;
 
+    @Mock
+    PricingService pricingService;
+
     Instant fixedInstant = Instant.parse("2026-08-02T12:00:00Z");
 
     Clock clock = Clock.fixed(fixedInstant, ZoneOffset.UTC);
@@ -72,6 +76,7 @@ class OrderProcessorTest {
                 orderRepository,
                 invoiceRepository,
                 invoiceGenerator,
+                pricingService,
                 clock
         );
     }
@@ -82,6 +87,8 @@ class OrderProcessorTest {
         prepareValidOrder();
 
         when(invoiceGenerator.generate(any(Order.class))).thenReturn(invoice);
+
+        when(pricingService.calculateFinalPrice(anyList())).thenReturn(new BigDecimal("180.00"));
 
         ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
 
@@ -103,11 +110,12 @@ class OrderProcessorTest {
         assertThat(result.getItems().getFirst().getProduct()).isSameAs(product);
         assertThat(result.getItems().getFirst().getQuantity()).isEqualTo(2);
         assertThat(result.getItems().getFirst().getUnitPrice()).isEqualByComparingTo("100.00");
-        assertThat(result.getTotalPrice()).isEqualByComparingTo("200.00");
+        assertThat(result.getTotalPrice()).isEqualByComparingTo("180.00");
         assertThat(result.getOrderDate()).isEqualTo(fixedInstant);
 
         verify(invoiceGenerator).generate(result);
         verify(invoiceRepository).add(invoice);
+        verify(pricingService).calculateFinalPrice(anyList());
         verify(cart).clear();
     }
 
@@ -126,6 +134,8 @@ class OrderProcessorTest {
         when(cartItem.getQuantity()).thenReturn(2);
         when(secondCartItem.getProduct()).thenReturn(secondProduct);
         when(secondCartItem.getQuantity()).thenReturn(5);
+
+        when(pricingService.calculateFinalPrice(anyList())).thenReturn(new BigDecimal("225.00"));
 
         when(product.getId()).thenReturn("PROD-1");
         when(product.getQuantity()).thenReturn(10);
@@ -147,8 +157,9 @@ class OrderProcessorTest {
                 .hasSize(2);
 
         assertThat(result.getTotalPrice())
-                .isEqualByComparingTo("250.00");
+                .isEqualByComparingTo("225.00");
 
+        verify(pricingService).calculateFinalPrice(anyList());
         verify(productManager).decreaseStock("PROD-1", 2);
         verify(productManager).decreaseStock("PROD-2", 5);
     }
@@ -276,18 +287,22 @@ class OrderProcessorTest {
     void shouldExecuteInCorrectOrder() {
         prepareValidOrder();
 
+        when(pricingService.calculateFinalPrice(anyList())).thenReturn(new BigDecimal("200.00"));
+
         when(invoiceGenerator.generate(any(Order.class))).thenReturn(invoice);
 
         orderProcessor.process(account, cart);
 
         InOrder inOrder = inOrder(
                 productManager,
+                pricingService,
                 orderRepository,
                 invoiceGenerator,
                 invoiceRepository,
                 cart
         );
 
+        inOrder.verify(pricingService).calculateFinalPrice(anyList());
         inOrder.verify(productManager).decreaseStock("PROD-1", 2);
         inOrder.verify(orderRepository).add(any(Order.class));
         inOrder.verify(invoiceGenerator).generate(any(Order.class));

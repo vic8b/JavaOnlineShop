@@ -33,36 +33,32 @@ public class Order {
             @NonNull UUID orderId,
             @NonNull Account account,
             @NonNull List<OrderItem> items,
+            @NonNull BigDecimal totalPrice,
             @NonNull Instant orderDate,
             @NonNull OrderStatus orderStatus
     ) {
         if (items.isEmpty()) throw new IllegalArgumentException("Order must contain at least one item");
+        if (totalPrice.signum() < 0) throw new IllegalArgumentException("Total price cannot be negative");
 
         this.orderId = orderId;
         this.account = account;
         this.items = List.copyOf(items);
-        this.totalPrice = calculateTotalPrice();
+        this.totalPrice = totalPrice.setScale(2, RoundingMode.HALF_UP);
         this.orderDate = orderDate;
         this.orderStatus = orderStatus;
     }
 
     @Builder
-    public Order(@NonNull Account account, @NonNull List<OrderItem> items, @NonNull Instant orderDate) {
+    public Order(@NonNull Account account, @NonNull List<OrderItem> items, @NonNull BigDecimal totalPrice, @NonNull Instant orderDate) {
         if (items.isEmpty()) throw new IllegalArgumentException("Order must contain at least one item");
+        if (totalPrice.signum() < 0) throw new IllegalArgumentException("Total price cannot be negative");
 
         this.orderId = UUID.randomUUID();
         this.account = account;
         this.items = List.copyOf(items);
-        this.totalPrice = calculateTotalPrice();
+        this.totalPrice = totalPrice.setScale(2, RoundingMode.HALF_UP);
         this.orderDate = orderDate;
         this.orderStatus = OrderStatus.PENDING;
-    }
-
-    private BigDecimal calculateTotalPrice() {
-        return this.items.stream()
-                .map(OrderItem::getTotalPrice)
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .setScale(2, RoundingMode.HALF_UP);
     }
 
     @Override

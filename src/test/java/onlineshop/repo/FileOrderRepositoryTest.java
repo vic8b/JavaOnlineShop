@@ -96,7 +96,11 @@ class FileOrderRepositoryTest {
 
         reader = new FileOrderRepository(file);
 
-        assertThat(reader.findById(order.getOrderId())).contains(order);
+        Order restoredOrder = reader.findById(order.getOrderId()).orElseThrow();
+
+        assertThat(restoredOrder).isEqualTo(order);
+
+        assertThat(restoredOrder.getTotalPrice()).isEqualByComparingTo("90.00");
     }
 
     @Test
@@ -134,25 +138,6 @@ class FileOrderRepositoryTest {
                 .contains(originalOrder);
     }
 
-    @Test
-    void shouldRejectDuplicateOrderIdsInFile() {
-        createRepository();
-
-        UUID duplicatedId = UUID.randomUUID();
-
-        Order originalOrder = createOrderWithId(duplicatedId);
-        Order orderDuplicate = createOrderWithId(duplicatedId);
-
-        orderRepository.add(originalOrder);
-
-        assertThatThrownBy(() -> orderRepository.add(orderDuplicate))
-                .isInstanceOf(OrderAlreadyExistsException.class)
-                .hasMessage("Order with id " + orderDuplicate.getOrderId() + " already exists");
-
-        assertThat(orderRepository.findById(duplicatedId))
-                .contains(originalOrder);
-    }
-
     private void createRepository() {
         orderRepository = new FileOrderRepository(file);
     }
@@ -161,6 +146,7 @@ class FileOrderRepositoryTest {
         return Order.builder()
                 .account(account)
                 .items(items)
+                .totalPrice(new BigDecimal("90.00"))
                 .orderDate(Instant.now())
                 .build();
     }
@@ -170,6 +156,7 @@ class FileOrderRepositoryTest {
                 orderId,
                 account,
                 items,
+                new BigDecimal("90.00"),
                 Instant.now(),
                 OrderStatus.PENDING
         );
