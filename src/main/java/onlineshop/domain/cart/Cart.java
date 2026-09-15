@@ -26,7 +26,6 @@ public class Cart {
 
         if (cartItem == null) {
             items.put(product.getId(), new CartItem(product, quantity));
-            System.out.println("Item has been added to the cart");
         } else {
             cartItem.changeQuantity(cartItem.getQuantity() + quantity);
             System.out.println("Item already in the cart. Quantity has been changed to " + cartItem.getQuantity());

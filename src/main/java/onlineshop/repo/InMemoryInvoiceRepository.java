@@ -4,30 +4,38 @@ import lombok.NonNull;
 import onlineshop.domain.invoice.Invoice;
 import onlineshop.exception.InvoiceAlreadyExistsException;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class InMemoryInvoiceRepository implements InvoiceRepository {
-    private final Map<String, Invoice> invoiceRepo = new HashMap<>();
+    private final Map<UUID, Invoice> invoiceRepo = new HashMap<>();
 
     @Override
     public void add(@NonNull Invoice invoice) {
-        if (invoiceRepo.putIfAbsent(invoice.getInvoiceId(), invoice) != null) {
-            throw new InvoiceAlreadyExistsException(invoice.getInvoiceId());
+        if (findByNumber(invoice.getInvoiceNumber()).isPresent()) {
+            throw InvoiceAlreadyExistsException.forNumber(invoice.getInvoiceNumber());
         }
 
-        System.out.println("Invoice: " + invoice.getInvoiceId() + " has been added to the repository");
+        if (invoiceRepo.putIfAbsent(invoice.getInvoiceId(), invoice) != null) {
+            throw InvoiceAlreadyExistsException.forId(invoice.getInvoiceId());
+        }
+
+        System.out.println("Invoice: " + invoice.getInvoiceNumber() + " has been added to the repository");
     }
 
     @Override
-    public Optional<Invoice> findById(@NonNull String id) {
+    public Optional<Invoice> findById(@NonNull UUID id) {
         return Optional.ofNullable(invoiceRepo.get(id));
     }
 
     @Override
-    public Optional<Invoice> findByOrderId(@NonNull String orderId) {
+    public Optional<Invoice> findByNumber(@NonNull String invoiceNumber) {
+        return invoiceRepo.values().stream()
+                .filter(invoice -> invoice.getInvoiceNumber().equals(invoiceNumber))
+                .findFirst();
+    }
+
+    @Override
+    public Optional<Invoice> findByOrderId(@NonNull UUID orderId) {
         return invoiceRepo.values().stream()
                 .filter(invoice -> invoice.getOrder().getOrderId().equals(orderId))
                 .findFirst();

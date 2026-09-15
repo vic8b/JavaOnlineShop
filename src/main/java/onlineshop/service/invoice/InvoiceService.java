@@ -1,20 +1,22 @@
 package onlineshop.service.invoice;
 
+import lombok.NonNull;
 import onlineshop.domain.invoice.Invoice;
 import onlineshop.domain.order.Order;
 
-import java.time.LocalDateTime;
-
 public class InvoiceService implements InvoiceGenerator {
-    // TODO invoiceId logic to change
-    private static int counter = 1;
+    private final InvoiceNumberGenerator numberGenerator;
+
+    public InvoiceService(@NonNull InvoiceNumberGenerator numberGenerator) {
+        this.numberGenerator = numberGenerator;
+    }
 
     @Override
-    public Invoice generate(Order order) {
-        String invoiceNumber = "INV-" + LocalDateTime.now().getYear() + "/" + counter++;
+    public Invoice generate(@NonNull Order order) {
+        String invoiceNumber = numberGenerator.generate();
 
         return Invoice.builder()
-                .invoiceId(invoiceNumber)
+                .invoiceNumber(invoiceNumber)
                 .order(order)
                 .build();
     }

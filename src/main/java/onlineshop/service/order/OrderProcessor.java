@@ -21,8 +21,6 @@ public class OrderProcessor {
     private final OrderRepository orderRepository;
     private final InvoiceRepository invoiceRepository;
     private final InvoiceGenerator invoiceGenerator;
-    // TODO orderId to change (to not start with "1" on new instance everytime)
-    private int orderId = 1;
 
     public OrderProcessor(
             @NonNull ProductManager productManager,
@@ -87,7 +85,6 @@ public class OrderProcessor {
 
     private Order createOrder(Account account, List<OrderItem> orderItems) {
         return Order.builder()
-                .orderId("ORD-" + orderId++)
                 .account(account)
                 .items(orderItems)
                 .build();

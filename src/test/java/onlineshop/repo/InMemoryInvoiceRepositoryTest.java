@@ -9,6 +9,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -17,7 +20,8 @@ class InMemoryInvoiceRepositoryTest {
     @Mock
     Order order;
     @Mock
-    Order order2;
+    Order secondOrder;
+
     Invoice invoice;
     InvoiceRepository invoiceRepository;
 
@@ -26,28 +30,28 @@ class InMemoryInvoiceRepositoryTest {
         invoiceRepository = new InMemoryInvoiceRepository();
 
         invoice = Invoice.builder()
-                .invoiceId("INV-2026/1")
+                .invoiceNumber("INV-2026/1")
                 .order(order)
                 .build();
     }
 
     @Test
-    void shouldAddPutAnInvoiceToTheRepository() {
+    void shouldAddInvoiceToTheRepository() {
         invoiceRepository.add(invoice);
 
         assertThat(invoiceRepository.findAll())
                 .singleElement()
                 .isEqualTo(invoice);
 
-        assertThat(invoiceRepository.findById("INV-2026/1"))
+        assertThat(invoiceRepository.findById(invoice.getInvoiceId()))
                 .isPresent()
                 .contains(invoice);
     }
 
     @Test
-    void shouldRejectDuplicateInvoiceId() {
+    void shouldRejectDuplicateInvoiceNumber() {
         Invoice invoiceDuplicate = Invoice.builder()
-                .invoiceId("INV-2026/1")
+                .invoiceNumber("INV-2026/1")
                 .order(order)
                 .build();
 
@@ -55,10 +59,30 @@ class InMemoryInvoiceRepositoryTest {
 
         assertThatThrownBy(() -> invoiceRepository.add(invoiceDuplicate))
                 .isInstanceOf(InvoiceAlreadyExistsException.class)
-                .hasMessage("Invoice with id " + invoice.getInvoiceId() + " already exists");
+                .hasMessage("Invoice with number " + invoice.getInvoiceNumber() + " already exists");
 
         assertThat(invoiceRepository.findById(invoice.getInvoiceId()))
                 .contains(invoice);
+
+        assertThat(invoiceRepository.findAll())
+                .containsExactly(invoice);
+    }
+
+    @Test
+    void shouldRejectDuplicateInvoiceId() {
+        UUID mockId = UUID.randomUUID();
+
+        Invoice originalInvoice = new Invoice(mockId, "INV-2026/1", order, LocalDateTime.now());
+        Invoice duplicateTestInvoice = new Invoice(mockId, "INV-2026/2", order, LocalDateTime.now());
+
+        invoiceRepository.add(originalInvoice);
+
+        assertThatThrownBy(() -> invoiceRepository.add(duplicateTestInvoice))
+                .isInstanceOf(InvoiceAlreadyExistsException.class)
+                .hasMessage("Invoice with id " + mockId + " already exists");
+
+        assertThat(invoiceRepository.findById(mockId))
+                .contains(originalInvoice);
     }
 
     @Test
@@ -70,8 +94,16 @@ class InMemoryInvoiceRepositoryTest {
     }
 
     @Test
-    void shouldFindCorrectOrderById() {
-        String mockId = "ORD-1";
+    void shouldFindInvoiceByNumber() {
+        invoiceRepository.add(invoice);
+
+        assertThat(invoiceRepository.findByNumber(invoice.getInvoiceNumber()))
+                .contains(invoice);
+    }
+
+    @Test
+    void shouldFindCorrectInvoiceByOrderId() {
+        UUID mockId = UUID.randomUUID();
         when(order.getOrderId()).thenReturn(mockId);
 
         invoiceRepository.add(invoice);
@@ -83,8 +115,8 @@ class InMemoryInvoiceRepositoryTest {
     @Test
     void shouldFindAllInvoices() {
         Invoice secondInvoice = Invoice.builder()
-                .invoiceId("INV-2026/2")
-                .order(order2)
+                .invoiceNumber("INV-2026/2")
+                .order(secondOrder)
                 .build();
 
         invoiceRepository.add(invoice);
@@ -96,14 +128,14 @@ class InMemoryInvoiceRepositoryTest {
     }
 
     @Test
-    void shouldReturnEmptyWhenAccountDoesNotExist() {
-        assertThat(invoiceRepository.findById("UNKNOWN"))
+    void shouldReturnEmptyWhenInvoiceDoesNotExist() {
+        assertThat(invoiceRepository.findById(UUID.randomUUID()))
                 .isEmpty();
     }
 
     @Test
     void shouldReturnEmptyWhenInvoiceForOrderDoesNotExist() {
-        assertThat(invoiceRepository.findByOrderId("UNKNOWN"))
+        assertThat(invoiceRepository.findByOrderId(UUID.randomUUID()))
                 .isEmpty();
     }
 }

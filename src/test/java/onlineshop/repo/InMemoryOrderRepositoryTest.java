@@ -2,6 +2,7 @@ package onlineshop.repo;
 
 import onlineshop.domain.order.Order;
 import onlineshop.domain.order.OrderItem;
+import onlineshop.domain.order.OrderStatus;
 import onlineshop.domain.product.Product;
 import onlineshop.domain.useraccount.Account;
 import onlineshop.exception.OrderAlreadyExistsException;
@@ -12,8 +13,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -42,30 +45,32 @@ class InMemoryOrderRepositoryTest {
     }
 
     @Test
-    void shouldAddPutAnOrderToTheRepository() {
+    void shouldAddOrderToTheRepository() {
         orderRepository.add(order);
 
         assertThat(orderRepository.findAll())
-                .singleElement()
-                .isEqualTo(order);
+                .containsExactly(order);
 
-        assertThat(orderRepository.findById("ORD-1"))
+        assertThat(orderRepository.findById(order.getOrderId()))
                 .isPresent()
                 .contains(order);
     }
 
     @Test
     void shouldRejectDuplicateOrderId() {
-        Order orderDuplicate = createOrder();
+        UUID duplicatedId = UUID.randomUUID();
 
-        orderRepository.add(order);
+        Order originalOrder = createOrderWithId(duplicatedId);
+        Order orderDuplicate = createOrderWithId(duplicatedId);
+
+        orderRepository.add(originalOrder);
 
         assertThatThrownBy(() -> orderRepository.add(orderDuplicate))
                 .isInstanceOf(OrderAlreadyExistsException.class)
                 .hasMessage("Order with id " + orderDuplicate.getOrderId() + " already exists");
 
-        assertThat(orderRepository.findById(orderDuplicate.getOrderId()))
-                .contains(order);
+        assertThat(orderRepository.findById(duplicatedId))
+                .contains(originalOrder);
     }
 
     @Test
@@ -79,7 +84,6 @@ class InMemoryOrderRepositoryTest {
     @Test
     void shouldFindAllOrders() {
         Order secondOrder = Order.builder()
-                .orderId("ORD-2")
                 .account(account)
                 .items(items)
                 .build();
@@ -94,10 +98,19 @@ class InMemoryOrderRepositoryTest {
 
     private Order createOrder() {
         return Order.builder()
-                .orderId("ORD-1")
                 .account(account)
                 .items(items)
                 .build();
+    }
+
+    private Order createOrderWithId(UUID orderId) {
+        return new Order(
+                orderId,
+                account,
+                items,
+                LocalDateTime.now(),
+                OrderStatus.PENDING
+        );
     }
 
     private OrderItem createOrderItem() {
@@ -109,8 +122,10 @@ class InMemoryOrderRepositoryTest {
     }
 
     @Test
-    void shouldReturnEmptyWhenAccountDoesNotExist() {
-        assertThat(orderRepository.findById("UNKNOWN"))
+    void shouldReturnEmptyWhenOrderDoesNotExist() {
+        UUID unknownOrderId = UUID.randomUUID();
+
+        assertThat(orderRepository.findById(unknownOrderId))
                 .isEmpty();
     }
 }
