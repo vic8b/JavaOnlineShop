@@ -43,8 +43,10 @@ class InMemoryProductRepositoryTest {
 
     @Test
     void shouldAddMethodPutAnObjectToTheRepository() {
+        //Act
         repository.add(computer);
 
+        //Assert
         assertThat(repository.findAll())
                 .contains(computer);
 
@@ -55,6 +57,7 @@ class InMemoryProductRepositoryTest {
 
     @Test
     void shouldAddNotReplaceExistingProductIdAndThrowException() {
+        //Arrange
         Computer testDuplicate = Computer.builder()
                 .id("1")
                 .name("duplicate")
@@ -64,8 +67,10 @@ class InMemoryProductRepositoryTest {
                 .ram("128 GB")
                 .build();
 
+        //Act
         repository.add(computer);
 
+        //Assert
         assertThatExceptionOfType(ProductAlreadyExistsException.class)
                 .isThrownBy(() -> repository.add(testDuplicate));
 
@@ -78,9 +83,11 @@ class InMemoryProductRepositoryTest {
 
     @Test
     void shouldDeleteExistingProduct() {
+        //Act
         repository.add(computer);
         boolean result = repository.delete("1");
 
+        //Assert
         assertThat(result).isTrue();
         assertThat(repository.findById("1"))
                 .isEmpty();
@@ -88,24 +95,29 @@ class InMemoryProductRepositoryTest {
 
     @Test
     void shouldReturnFalseWhenDeletingNonExistingProduct() {
+        //Act
         boolean result = repository.delete("1");
 
+        //Assert
         assertThat(result).isFalse();
         assertThat(repository.findById("1"))
                 .isEmpty();
     }
 
     @Test
-    void shouldChangeSpecification() {
+    void shouldUpdateProduct() {
+        //Act
         repository.add(computer);
-        repository.changeSpecification("1", smartphone);
+        repository.updateProduct("1", smartphone);
 
+        //Assert
         assertThat(repository.findById("1"))
                 .contains(smartphone);
     }
 
     @Test
     void shouldThrowExceptionWhenChangingSpecificationWithNonMatchingIds() {
+        //Arrange
         Smartphone smartphone = Smartphone.builder()
                 .id("2")
                 .name("testSmartphone")
@@ -117,26 +129,30 @@ class InMemoryProductRepositoryTest {
                 .accessory("case")
                 .build();
 
+        //Act
         repository.add(computer);
 
+        //Assert
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> repository.changeSpecification("1", smartphone));
+                .isThrownBy(() -> repository.updateProduct("1", smartphone));
 
-        assertThatThrownBy(() -> repository.changeSpecification("1", smartphone))
+        assertThatThrownBy(() -> repository.updateProduct("1", smartphone))
                 .hasMessage("Product ids do not match");
     }
 
     @Test
     void shouldThrowExceptionWhenChangingSpecificationOfNonExistingId() {
+        //Assert
         assertThatExceptionOfType(ProductNotFoundException.class)
-                .isThrownBy(() -> repository.changeSpecification("1", computer));
+                .isThrownBy(() -> repository.updateProduct("1", computer));
 
-        assertThatThrownBy(() -> repository.changeSpecification("1", computer))
+        assertThatThrownBy(() -> repository.updateProduct("1", computer))
                 .hasMessage("Product with id 1 not found");
     }
 
     @Test
     void shouldFindAllProducts() {
+        //Arrange
         Smartphone smartphone = Smartphone.builder()
                 .id("2")
                 .name("testSmartphone")
@@ -148,9 +164,11 @@ class InMemoryProductRepositoryTest {
                 .accessory("case")
                 .build();
 
+        //Act
         repository.add(computer);
         repository.add(smartphone);
 
+        //Assert
         assertThat(repository.findAll())
                 .contains(computer)
                 .contains(smartphone);

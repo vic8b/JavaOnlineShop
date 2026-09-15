@@ -46,8 +46,10 @@ class InMemoryOrderRepositoryTest {
 
     @Test
     void shouldAddOrderToTheRepository() {
+        //Act
         orderRepository.add(order);
 
+        //Assert
         assertThat(orderRepository.findAll())
                 .containsExactly(order);
 
@@ -58,13 +60,16 @@ class InMemoryOrderRepositoryTest {
 
     @Test
     void shouldRejectDuplicateOrderId() {
+        //Arrange
         UUID duplicatedId = UUID.randomUUID();
 
         Order originalOrder = createOrderWithId(duplicatedId);
         Order orderDuplicate = createOrderWithId(duplicatedId);
 
+        //Act
         orderRepository.add(originalOrder);
 
+        //Assert
         assertThatThrownBy(() -> orderRepository.add(orderDuplicate))
                 .isInstanceOf(OrderAlreadyExistsException.class)
                 .hasMessage("Order with id " + orderDuplicate.getOrderId() + " already exists");
@@ -75,14 +80,17 @@ class InMemoryOrderRepositoryTest {
 
     @Test
     void shouldFindOrderById() {
+        //Act
         orderRepository.add(order);
 
+        //Assert
         assertThat(orderRepository.findById(order.getOrderId()))
                 .contains(order);
     }
 
     @Test
     void shouldFindAllOrders() {
+        //Arrange
         Order secondOrder = Order.builder()
                 .account(account)
                 .items(items)
@@ -90,9 +98,11 @@ class InMemoryOrderRepositoryTest {
                 .totalPrice(new BigDecimal("100.00"))
                 .build();
 
+        //Act
         orderRepository.add(order);
         orderRepository.add(secondOrder);
 
+        //Assert
         assertThat(orderRepository.findAll())
                 .contains(order)
                 .contains(secondOrder);

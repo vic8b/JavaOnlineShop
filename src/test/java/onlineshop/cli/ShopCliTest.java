@@ -71,7 +71,7 @@ class ShopCliTest {
         //Arrange
         Product product = mock(Product.class);
 
-        when(dataReader.getOptionInt())
+        when(dataReader.readOptionNumber())
                 .thenReturn(
                         Option.SHOW_PRODUCTS.getOptionNumber(),
                         Option.EXIT.getOptionNumber()
@@ -91,7 +91,7 @@ class ShopCliTest {
     @Test
     void shouldInformThatProductIsNotAvailable() {
         //Arrange
-        when(dataReader.getOptionInt())
+        when(dataReader.readOptionNumber())
                 .thenReturn(
                         Option.SHOW_PRODUCTS.getOptionNumber(),
                         Option.EXIT.getOptionNumber()
@@ -110,10 +110,10 @@ class ShopCliTest {
     // ADD_PRODUCT_TO_CART
     @Test
     void shouldFindProductAndAddProductToCart() {
-        //Arrange + Act
+        //Arrange
         Product product = mock(Product.class);
 
-        when (dataReader.getOptionInt())
+        when (dataReader.readOptionNumber())
                 .thenReturn(
                         Option.ADD_PRODUCT_TO_CART.getOptionNumber(),
                         Option.EXIT.getOptionNumber()
@@ -124,6 +124,7 @@ class ShopCliTest {
 
         when(productInventoryService.findProductById("1")).thenReturn(product);
 
+        //Act
         shopCli.run();
 
         //Assert
@@ -135,7 +136,7 @@ class ShopCliTest {
     @Test
     void shouldHandleNonExistingProductWhenAddedToCart() {
         //Arrange
-        when (dataReader.getOptionInt())
+        when (dataReader.readOptionNumber())
                 .thenReturn(
                         Option.ADD_PRODUCT_TO_CART.getOptionNumber(),
                         Option.EXIT.getOptionNumber()
@@ -149,7 +150,7 @@ class ShopCliTest {
         //Act
         shopCli.run();
 
-        //Act + Assert
+        //Assert
         verify(productInventoryService).findProductById("1");
         verify(consolePrinter).print("Product with id 1 not found");
         verify(cart, never()).addProduct(any(), anyInt());
@@ -160,7 +161,7 @@ class ShopCliTest {
         //Arrange
         Product product = mock(Product.class);
 
-        when (dataReader.getOptionInt())
+        when (dataReader.readOptionNumber())
                 .thenReturn(
                         Option.ADD_PRODUCT_TO_CART.getOptionNumber(),
                         Option.EXIT.getOptionNumber()
@@ -176,7 +177,7 @@ class ShopCliTest {
         //Act
         shopCli.run();
 
-        //Act + Assert
+        //Assert
         verify(productInventoryService).findProductById("1");
         verify(cart).addProduct(product, 1);
         verify(consolePrinter).print("Required quantity exceeds item availability");
@@ -188,7 +189,7 @@ class ShopCliTest {
         //Arrange
         CartItem cartItem = mock(CartItem.class);
 
-        when(dataReader.getOptionInt())
+        when(dataReader.readOptionNumber())
                 .thenReturn(
                         Option.SHOW_CART.getOptionNumber(),
                         Option.EXIT.getOptionNumber()
@@ -208,7 +209,7 @@ class ShopCliTest {
     @Test
     void shouldInformThatTheCartIsEmpty() {
         //Arrange
-        when(dataReader.getOptionInt())
+        when(dataReader.readOptionNumber())
                 .thenReturn(
                         Option.SHOW_CART.getOptionNumber(),
                         Option.EXIT.getOptionNumber()
@@ -231,7 +232,7 @@ class ShopCliTest {
         //Arrange
         Order order = mock(Order.class);
 
-        when(dataReader.getOptionInt())
+        when(dataReader.readOptionNumber())
                 .thenReturn(
                         Option.CHECKOUT.getOptionNumber(),
                         Option.EXIT.getOptionNumber()
@@ -251,7 +252,7 @@ class ShopCliTest {
     @Test
     void shouldHandleProcessingEmptyCart() {
         //Arrange
-        when(dataReader.getOptionInt())
+        when(dataReader.readOptionNumber())
                 .thenReturn(
                         Option.CHECKOUT.getOptionNumber(),
                         Option.EXIT.getOptionNumber()
@@ -273,7 +274,7 @@ class ShopCliTest {
         //Arrange
         ProductUnavailableException productUnavailableException = new ProductUnavailableException("1", 3, 2);
 
-        when(dataReader.getOptionInt())
+        when(dataReader.readOptionNumber())
                 .thenReturn(
                         Option.CHECKOUT.getOptionNumber(),
                         Option.EXIT.getOptionNumber()
@@ -294,7 +295,7 @@ class ShopCliTest {
     @Test
     void shouldExitLoop() {
         //Arrange
-        when(dataReader.getOptionInt())
+        when(dataReader.readOptionNumber())
                 .thenReturn(
                         Option.EXIT.getOptionNumber()
                 );
@@ -309,7 +310,7 @@ class ShopCliTest {
     @Test
     void shouldInformAboutInvalidOptionAndContinueRunning() {
         //Arrange
-        when(dataReader.getOptionInt())
+        when(dataReader.readOptionNumber())
                 .thenReturn(
                         999,
                         Option.EXIT.getOptionNumber()
@@ -327,7 +328,7 @@ class ShopCliTest {
     @Test
     void shouldShowAccountInfo() {
         //Arrange
-        when(dataReader.getOptionInt())
+        when(dataReader.readOptionNumber())
                 .thenReturn(
                         Option.ACCOUNT_INFO.getOptionNumber(),
                         Option.EXIT.getOptionNumber()
@@ -348,7 +349,7 @@ class ShopCliTest {
         //Arrange
         Order order = mock(Order.class);
 
-        when(dataReader.getOptionInt())
+        when(dataReader.readOptionNumber())
                 .thenReturn(
                         Option.SHOW_ORDERS.getOptionNumber(),
                         Option.EXIT.getOptionNumber()
@@ -369,7 +370,7 @@ class ShopCliTest {
     @Test
     void shouldInformThatOrdersAreEmpty() {
         //Arrange
-        when(dataReader.getOptionInt())
+        when(dataReader.readOptionNumber())
                 .thenReturn(
                         Option.SHOW_ORDERS.getOptionNumber(),
                         Option.EXIT.getOptionNumber()
@@ -393,7 +394,7 @@ class ShopCliTest {
         //Arrange
         Invoice invoice = mock(Invoice.class);
 
-        when(dataReader.getOptionInt())
+        when(dataReader.readOptionNumber())
                 .thenReturn(
                         Option.SHOW_INVOICES.getOptionNumber(),
                         Option.EXIT.getOptionNumber()
@@ -414,7 +415,7 @@ class ShopCliTest {
     @Test
     void shouldInformThatInvoicesAreEmpty() {
         //Arrange
-        when(dataReader.getOptionInt())
+        when(dataReader.readOptionNumber())
                 .thenReturn(
                         Option.SHOW_INVOICES.getOptionNumber(),
                         Option.EXIT.getOptionNumber()

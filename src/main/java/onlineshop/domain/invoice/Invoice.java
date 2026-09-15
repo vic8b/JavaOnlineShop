@@ -28,7 +28,9 @@ public class Invoice {
             @NonNull Order order,
             @NonNull Instant issueDate
     ) {
-        if (invoiceNumber.isBlank()) throw new IllegalArgumentException("Invoice number cannot be blank");
+        if (invoiceNumber.isBlank()) {
+            throw new IllegalArgumentException("Invoice number cannot be blank");
+        }
 
         this.invoiceId = invoiceId;
         this.invoiceNumber = invoiceNumber;
@@ -39,7 +41,9 @@ public class Invoice {
     // Design pattern: Builder
     @Builder
     public Invoice(@NonNull String invoiceNumber, @NonNull Order order, @NonNull Instant issueDate) {
-        if (invoiceNumber.isBlank()) throw new IllegalArgumentException("Invoice number cannot be blank");
+        if (invoiceNumber.isBlank()) {
+            throw new IllegalArgumentException("Invoice number cannot be blank");
+        }
 
         this.invoiceId = UUID.randomUUID();
         this.invoiceNumber = invoiceNumber;

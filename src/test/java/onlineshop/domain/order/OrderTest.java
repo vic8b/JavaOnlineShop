@@ -25,6 +25,7 @@ class OrderTest {
 
     @Test
     void shouldConstructorSuccessfullyCreateOrderDate() {
+        //Arrange
         OrderItem orderItem = createOrderItem();
 
         List<OrderItem> items = List.of(orderItem);
@@ -36,15 +37,18 @@ class OrderTest {
                 .totalPrice(new BigDecimal("100.00"))
                 .build();
 
+        //Act + Assert
         assertNotNull(order.getOrderDate());
     }
 
     @Test
     void shouldConstructorSetOrderStatusToPending() {
+        //Arrange
         OrderItem orderItem = createOrderItem();
 
         List<OrderItem> items = List.of(orderItem);
 
+        //Act
         Order order = Order.builder()
                 .account(account)
                 .items(items)
@@ -52,14 +56,17 @@ class OrderTest {
                 .totalPrice(new BigDecimal("100.00"))
                 .build();
 
+        //Assert
         assertThat(order.getOrderStatus())
                 .isEqualTo(OrderStatus.PENDING);
     }
 
     @Test
     void shouldEmptyOrderItemsListThrowException() {
+        //Arrange
         List<OrderItem> items = new ArrayList<>();
 
+        //Act + Assert
         assertThatThrownBy(() -> Order.builder()
                 .account(account)
                 .items(items)
@@ -72,6 +79,7 @@ class OrderTest {
 
     @Test
     void shouldSuccessfullyCalculateTotalOrderPrice() {
+        //Arrange
         OrderItem testOrderItem1 = OrderItem.builder()
                 .product(product)
                 .quantity(1)
@@ -86,6 +94,7 @@ class OrderTest {
 
         List<OrderItem> items = List.of(testOrderItem1, testOrderItem2);
 
+        //Act
         Order order = Order.builder()
                 .account(account)
                 .items(items)
@@ -93,16 +102,19 @@ class OrderTest {
                 .totalPrice(new BigDecimal("130.00"))
                 .build();
 
+        //Assert
         assertThat(order.getTotalPrice())
                 .isEqualByComparingTo("130.00");
     }
 
     @Test
     void shouldThrowExceptionWhenTotalPriceIsNegative() {
+        //Arrange
         OrderItem orderItem = createOrderItem();
 
         List<OrderItem> items = List.of(orderItem);
 
+        //Act + Assert
         assertThatThrownBy(() -> Order.builder()
                 .account(account)
                 .items(items)

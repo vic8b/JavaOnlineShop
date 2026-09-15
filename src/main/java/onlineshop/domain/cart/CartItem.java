@@ -16,17 +16,25 @@ public class CartItem {
 
     // Design pattern: Builder
     @Builder
-    public CartItem(Product product, int quantity) {
-        if (quantity <= 0) throw new IllegalArgumentException("Quantity must be positive");
-        if (quantity > product.getQuantity()) throw new IllegalArgumentException("Required quantity exceeds item availability");
+    public CartItem(@NonNull Product product, @NonNull int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Quantity must be positive");
+        }
+        if (quantity > product.getQuantity()) {
+            throw new IllegalArgumentException("Required quantity exceeds item availability");
+        }
 
         this.product = product;
         this.quantity = quantity;
     }
 
     public void changeQuantity(int newQuantity) {
-        if (newQuantity <= 0) throw new IllegalArgumentException("Quantity must be positive");
-        if (newQuantity > product.getQuantity()) throw new IllegalArgumentException("Required quantity exceeds item availability");
+        if (newQuantity <= 0) {
+            throw new IllegalArgumentException("Quantity must be positive");
+        }
+        if (newQuantity > product.getQuantity()) {
+            throw new IllegalArgumentException("Required quantity exceeds item availability");
+        }
 
         this.quantity = newQuantity;
     }

@@ -32,6 +32,7 @@ class OrderQueryServiceTest {
 
     @Test
     void shouldFindOrdersForAccount() {
+        //Arrange
         when(firstOrder.getAccount()).thenReturn(firstAccount);
         when(secondOrder.getAccount()).thenReturn(secondAccount);
 
@@ -42,18 +43,23 @@ class OrderQueryServiceTest {
 
         OrderQueryService orderQueryService = new OrderQueryService(orderRepository);
 
+        //Act
         List<Order> result = orderQueryService.findOrdersForAccount("ACC-1");
 
+        //Assert
         assertThat(result).containsExactly(firstOrder);
     }
 
     @Test
     void shouldReturnEmptyListWhenAccountHasNoOrders() {
+        //Arrange
         when(orderRepository.findAll()).thenReturn(List.of());
+        OrderQueryService service = new OrderQueryService(orderRepository);
 
-        OrderQueryService orderQueryService = new OrderQueryService(orderRepository);
+        //Act
+        List<Order> result = service.findOrdersForAccount("ACC-1");
 
-        assertThat(orderQueryService.findOrdersForAccount("ACC-1"))
-                .isEmpty();
+        //Assert
+        assertThat(result).isEmpty();
     }
 }

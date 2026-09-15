@@ -26,11 +26,13 @@ class CartItemTest {
 
     @Test
     void shouldBuilderCreateInstance() {
+        //Arrange
         CartItem cartItem = CartItem.builder()
                 .product(computer)
                 .quantity(1)
                 .build();
 
+        //Act + Assert
         assertThat(cartItem)
                 .hasFieldOrPropertyWithValue("product", computer)
                 .hasFieldOrPropertyWithValue("quantity", 1);
@@ -38,6 +40,7 @@ class CartItemTest {
 
     @Test
     void shouldNegativeQuantityThrowException() {
+        //Act + Assert
         assertThatThrownBy(() -> CartItem.builder()
                 .product(computer)
                 .quantity(-1)
@@ -47,6 +50,7 @@ class CartItemTest {
 
     @Test
     void shouldExceedingCartItemQuantityThrowException() {
+        //Act + Assert
         assertThatThrownBy(() -> CartItem.builder()
                 .product(computer)
                 .quantity(100)
@@ -56,35 +60,42 @@ class CartItemTest {
 
     @Test
     void shouldSuccessfullyChangeQuantity() {
+        //Arrange
         CartItem cartItem = CartItem.builder()
                 .product(computer)
                 .quantity(1)
                 .build();
 
+        //Act
         cartItem.changeQuantity(2);
 
+        //Assert
         assertThat(cartItem.getQuantity())
                 .isEqualTo(2);
     }
 
     @Test
     void shouldNegativeNewQuantityThrowException() {
+        //Arrange
         CartItem cartItem = CartItem.builder()
                 .product(computer)
                 .quantity(1)
                 .build();
 
+        //Act + Assert
         assertThatThrownBy(() -> cartItem.changeQuantity(-2))
                 .hasMessage("Quantity must be positive");
     }
 
     @Test
     void shouldExceedingNewQuantityThrowException() {
+        //Arrange
         CartItem cartItem = CartItem.builder()
                 .product(computer)
                 .quantity(1)
                 .build();
 
+        //Act + Assert
         assertThatThrownBy(() -> cartItem.changeQuantity(1000))
                 .hasMessage("Required quantity exceeds item availability");
     }

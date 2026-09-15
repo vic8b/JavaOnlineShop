@@ -12,10 +12,7 @@ public class ProductPercentageDiscount implements DiscountPolicy {
     private final BigDecimal percentage;
 
     public ProductPercentageDiscount(@NonNull String productId, @NonNull BigDecimal percentage) {
-        if (percentage.signum() <= 0 || percentage.compareTo(new BigDecimal("100")) > 0) {
-            throw new IllegalArgumentException("Percentage must be between 0 and 100");
-        }
-
+        validateDiscountParameters(percentage);
 
         this.productId = productId;
         this.percentage = percentage;
@@ -29,5 +26,11 @@ public class ProductPercentageDiscount implements DiscountPolicy {
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .multiply(percentage)
                 .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+    }
+
+    private static void validateDiscountParameters(BigDecimal percentage) {
+        if (percentage.signum() <= 0 || percentage.compareTo(new BigDecimal("100")) > 0) {
+            throw new IllegalArgumentException("Percentage must be between 0 and 100");
+        }
     }
 }

@@ -14,6 +14,7 @@ import onlineshop.service.order.OrderQueryService;
 import onlineshop.service.product.ProductInventoryService;
 
 import java.util.List;
+import java.util.Optional;
 
 public class ShopCli {
     private final ProductInventoryService productInventoryService;
@@ -47,22 +48,26 @@ public class ShopCli {
     public void run() {
         printer.printWelcomeMessage();
 
-        Option option;
-
-        do {
+        while (true) {
             printer.printMenu(Option.class);
-            option = Option.fromNumber(dataReader.getOptionInt());
 
+            Optional<Option> selectedOption = Option.fromNumber(dataReader.readOptionNumber());
+
+            if (selectedOption.isEmpty()) {
+                printer.print("Invalid option");
+                continue;
+            }
+
+            Option option = selectedOption.get();
             handleOption(option);
-        } while (option != Option.EXIT);
+
+            if (option == Option.EXIT) {
+                return;
+            }
+        }
     }
 
     private void handleOption(Option option) {
-        if (option == null) {
-            printer.print("Invalid option");
-            return;
-        }
-
         switch (option) {
             case SHOW_PRODUCTS -> showProducts();
             case ADD_PRODUCT_TO_CART -> addProductToCart();

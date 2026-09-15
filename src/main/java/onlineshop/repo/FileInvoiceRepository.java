@@ -6,20 +6,18 @@ import onlineshop.domain.invoice.Invoice;
 import onlineshop.exception.InvoiceAlreadyExistsException;
 import onlineshop.exception.InvoicePersistenceException;
 import onlineshop.repo.file.InvoiceFileSerializationService;
+import onlineshop.repo.file.TextFileStorage;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
 
 @Slf4j
 public class FileInvoiceRepository implements InvoiceRepository {
     private final Map<UUID, Invoice> invoiceRepo = new ConcurrentHashMap<>();
     private final Path file;
+    private final TextFileStorage textFileStorage = new TextFileStorage();
     private final InvoiceFileSerializationService invoiceFileSerializationService;
 
     public FileInvoiceRepository(@NonNull Path file, @NonNull OrderRepository orderRepository) {
@@ -80,49 +78,20 @@ public class FileInvoiceRepository implements InvoiceRepository {
 
     private void initializeFile() {
         try {
-            Path parent = file.getParent();
-
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-
-            if (Files.exists(file) && Files.isDirectory(file)) {
-                throw new InvoicePersistenceException("Expected a file, but path is directory");
-            }
-
-            if (Files.notExists(file)) {
-                Files.createFile(file);
-            }
+            textFileStorage.initialize(file);
         } catch (IOException e) {
             throw new InvoicePersistenceException("Could not initialize invoices file", e);
         }
     }
 
     private void loadInvoices() {
-        try (Stream<String> lines = Files.lines(file, StandardCharsets.UTF_8)) {
-            lines.filter(line -> !line.isBlank())
+        try {
+            textFileStorage.readLines(file).stream()
+                    .filter(line -> !line.isBlank())
                     .map(invoiceFileSerializationService::decode)
                     .forEach(this::addLoadedInvoice);
         } catch (IOException e) {
             throw new InvoicePersistenceException("Could not load invoices", e);
-        }
-    }
-
-    private void saveAll(Map<UUID, Invoice> invoicesToSave) {
-        List<String> lines = invoicesToSave.values().stream()
-                .map(invoiceFileSerializationService::encode)
-                .toList();
-
-        try {
-            Files.write(
-                    file,
-                    lines,
-                    StandardCharsets.UTF_8,
-                    StandardOpenOption.CREATE,
-                    StandardOpenOption.TRUNCATE_EXISTING
-            );
-        } catch (IOException e) {
-            throw new InvoicePersistenceException("Could not save invoices to file: " + file, e);
         }
     }
 
@@ -136,5 +105,17 @@ public class FileInvoiceRepository implements InvoiceRepository {
         }
 
         invoiceRepo.put(invoice.getInvoiceId(), invoice);
+    }
+
+    private void saveAll(Map<UUID, Invoice> invoicesToSave) {
+        List<String> lines = invoicesToSave.values().stream()
+                .map(invoiceFileSerializationService::encode)
+                .toList();
+
+        try {
+            textFileStorage.writeLines(file, lines);
+        } catch (IOException e) {
+            throw new InvoicePersistenceException("Could not save invoices to file: " + file, e);
+        }
     }
 }

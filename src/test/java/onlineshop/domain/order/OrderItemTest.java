@@ -18,6 +18,7 @@ class OrderItemTest {
 
     @Test
     void shouldThrowExceptionWhenQuantityIsNotPositive() {
+        //Act + Assert
         assertThatThrownBy(() -> OrderItem.builder()
                 .product(product)
                 .quantity(-1)
@@ -37,6 +38,7 @@ class OrderItemTest {
 
     @Test
     void shouldThrowExceptionWhenUnitPriceIsNotPositive() {
+        //Act + Assert
         assertThatThrownBy(() -> OrderItem.builder()
                 .product(product)
                 .quantity(1)
@@ -56,12 +58,14 @@ class OrderItemTest {
 
     @Test
     void shouldCalculateTotalPrice() {
+        //Arrange
         OrderItem orderItem = OrderItem.builder()
                 .product(product)
                 .quantity(2)
                 .unitPrice(BigDecimal.TEN)
                 .build();
 
+        //Act + Assert
         assertThat(orderItem.totalPrice())
                 .isEqualByComparingTo("20");
     }

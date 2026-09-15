@@ -26,8 +26,10 @@ class InMemoryAccountRepositoryTest {
 
     @Test
     void shouldAddPutAnAccountToTheRepository() {
+        //Act
         accountRepository.add(account);
 
+        //Assert
         assertThat(accountRepository.findAll())
                 .singleElement()
                 .isEqualTo(account);
@@ -39,6 +41,7 @@ class InMemoryAccountRepositoryTest {
 
     @Test
     void shouldRejectDuplicateAccountId() {
+        //Arrange
         Account accountDuplicate = Account.builder()
                 .accountId("1")
                 .firstName("John")
@@ -46,8 +49,10 @@ class InMemoryAccountRepositoryTest {
                 .email(new Email("john@gmail.com"))
                 .build();
 
+        //Act
         accountRepository.add(account);
 
+        //Assert
         assertThatThrownBy(() -> accountRepository.add(accountDuplicate))
                 .isInstanceOf(AccountAlreadyExistsException.class)
                 .hasMessage("Account with id " + account.getAccountId() + " already exists");
@@ -58,14 +63,17 @@ class InMemoryAccountRepositoryTest {
 
     @Test
     void shouldFindAccountById() {
+        //Act
         accountRepository.add(account);
 
+        //Assert
         assertThat(accountRepository.findById(account.getAccountId()))
                 .contains(account);
     }
 
     @Test
     void shouldFindAllAccounts() {
+        //Arrange
         Account secondAccount = Account.builder()
                 .accountId("2")
                 .firstName("Mark")
@@ -73,9 +81,11 @@ class InMemoryAccountRepositoryTest {
                 .email(new Email("john@gmail.com"))
                 .build();
 
+        //Act
         accountRepository.add(account);
         accountRepository.add(secondAccount);
 
+        //Assert
         assertThat(accountRepository.findAll())
                 .contains(account)
                 .contains(secondAccount);
@@ -83,6 +93,7 @@ class InMemoryAccountRepositoryTest {
 
     @Test
     void shouldReturnEmptyWhenAccountDoesNotExist() {
+        //Assert
         assertThat(accountRepository.findById("UNKNOWN"))
                 .isEmpty();
     }

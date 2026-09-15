@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.*;
 class AccountTest {
     @Test
     void shouldBuilderCreateInstance() {
+        //Arrange
         Account account = Account.builder()
                 .accountId("1")
                 .firstName("John")
@@ -15,6 +16,7 @@ class AccountTest {
                 .email(new Email("john@gmail.com"))
                 .build();
 
+        //Assert
         assertThat(account)
                 .hasFieldOrPropertyWithValue("accountId", "1")
                 .hasFieldOrPropertyWithValue("firstName", "John")
@@ -24,6 +26,7 @@ class AccountTest {
 
     @Test
     void shouldIncorrectEmailThrowException() {
+        //Act + Assert
         assertThatThrownBy(() -> Account.builder()
                 .accountId("1")
                 .firstName("John")
@@ -54,6 +57,7 @@ class AccountTest {
 
     @Test
     void shouldBlankIdThrowException() {
+        //Act + Assert
         assertThatThrownBy(() -> Account.builder()
                 .accountId("")
                 .firstName("John")
@@ -73,6 +77,7 @@ class AccountTest {
 
     @Test
     void shouldBlankFirstNameThrowException() {
+        //Act + Assert
         assertThatThrownBy(() -> Account.builder()
                 .accountId("1")
                 .firstName("")
@@ -92,6 +97,7 @@ class AccountTest {
 
     @Test
     void shouldBlankLastNameThrowException() {
+        //Act + Assert
         assertThatThrownBy(() -> Account.builder()
                 .accountId("1")
                 .firstName("John")

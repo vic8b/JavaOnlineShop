@@ -18,12 +18,14 @@ class InvoiceTest {
 
     @Test
     void shouldCreateInvoice() {
+        //Arrange
         Invoice invoice = Invoice.builder()
                 .invoiceNumber("INV-1")
                 .order(order)
                 .issueDate(Instant.now())
                 .build();
 
+        //Act + Assert
         assertThat(invoice.getInvoiceNumber()).isEqualTo("INV-1");
         assertThat(invoice.getOrder()).isSameAs(order);
         assertThat(invoice.getIssueDate()).isNotNull();
@@ -31,6 +33,7 @@ class InvoiceTest {
 
     @Test
     void shouldBlankInvoiceNumberThrowException() {
+        //Act + Assert
         assertThatThrownBy(() -> Invoice.builder()
                 .invoiceNumber("")
                 .order(order)

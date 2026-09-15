@@ -16,7 +16,9 @@ public class PricingService {
     }
 
     public BigDecimal calculateFinalPrice(@NonNull List<OrderItem> items) {
-        if (items.isEmpty()) throw new IllegalArgumentException("Items cannot be empty");
+        if (items.isEmpty()) {
+            throw new IllegalArgumentException("Items cannot be empty");
+        }
 
         BigDecimal regularPrice = items.stream()
                 .map(OrderItem::totalPrice)
@@ -24,11 +26,13 @@ public class PricingService {
 
         BigDecimal discount = discountPolicy.calculateDiscount(items, regularPrice);
 
-        if (discount.signum() < 0)
+        if (discount.signum() < 0) {
             throw new IllegalStateException("Discount cannot be negative");
+        }
 
-        if (discount.compareTo(regularPrice) > 0)
+        if (discount.compareTo(regularPrice) > 0) {
             throw new IllegalStateException("Discount cannot exceed regular price");
+        }
 
         return regularPrice.subtract(discount).setScale(2, RoundingMode.HALF_UP);
     }

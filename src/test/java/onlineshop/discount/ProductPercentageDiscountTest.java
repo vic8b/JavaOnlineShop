@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 class ProductPercentageDiscountTest {
     @Test
     void shouldCalculateDiscountForSelectedProduct() {
+        //Arrange
         Product product = mock(Product.class);
         OrderItem orderItem = mock(OrderItem.class);
 
@@ -27,13 +28,16 @@ class ProductPercentageDiscountTest {
         DiscountPolicy discountPolicy =
                 new ProductPercentageDiscount(testProductId, new BigDecimal("10"));
 
+        //Act
         BigDecimal discount = discountPolicy.calculateDiscount(List.of(orderItem), regularPrice);
 
+        //Assert
         assertThat(discount).isEqualByComparingTo("10.00");
     }
 
     @Test
     void shouldReturnZeroDiscountWhenProductDoesNotMatch() {
+        //Arrange
         Product product = mock(Product.class);
         OrderItem orderItem = mock(OrderItem.class);
 
@@ -46,8 +50,10 @@ class ProductPercentageDiscountTest {
         DiscountPolicy discountPolicy =
                 new ProductPercentageDiscount("P-001", new BigDecimal("10"));
 
+        //Act
         BigDecimal discount = discountPolicy.calculateDiscount(List.of(orderItem), regularPrice);
 
+        //Assert
         assertThat(discount).isEqualByComparingTo("0.00");
     }
 }

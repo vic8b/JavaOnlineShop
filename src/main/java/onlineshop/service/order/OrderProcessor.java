@@ -3,22 +3,22 @@ package onlineshop.service.order;
 import lombok.NonNull;
 import onlineshop.domain.cart.Cart;
 import onlineshop.domain.cart.CartItem;
+import onlineshop.domain.invoice.Invoice;
 import onlineshop.domain.order.Order;
 import onlineshop.domain.order.OrderItem;
 import onlineshop.domain.product.Product;
 import onlineshop.domain.useraccount.Account;
-import onlineshop.exception.ProductUnavailableException;
-import onlineshop.domain.invoice.Invoice;
 import onlineshop.repo.InvoiceRepository;
 import onlineshop.repo.OrderRepository;
 import onlineshop.service.discount.PricingService;
-import onlineshop.service.product.ProductInventoryService;
 import onlineshop.service.invoice.InvoiceGenerator;
+import onlineshop.service.product.ProductInventoryService;
 
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class OrderProcessor {
     private final ProductInventoryService productInventoryService;
@@ -27,8 +27,6 @@ public class OrderProcessor {
     private final InvoiceGenerator invoiceGenerator;
     private final PricingService pricingService;
     private final Clock clock;
-
-    private final Object productStockLock = new Object();
 
     public OrderProcessor(
             @NonNull ProductInventoryService productInventoryService,
@@ -49,15 +47,11 @@ public class OrderProcessor {
     public Order processCheckout(@NonNull Account account, @NonNull Cart cart) {
         validateCartState(account, cart);
 
-        List<OrderItem> orderItems;
+        List<CartItem> cartItems = cart.getItems();
 
-        synchronized (productStockLock) {
-            validateAvailability(cart);
+        List<Product> reservedProducts = productInventoryService.reserveStock(cartItems);
 
-            orderItems = createOrderItems(cart);
-
-            decreaseProductStock(orderItems);
-        }
+        List<OrderItem> orderItems = createOrderItems(cartItems, reservedProducts);
 
         BigDecimal finalPrice = pricingService.calculateFinalPrice(orderItems);
 
@@ -72,25 +66,20 @@ public class OrderProcessor {
         return order;
     }
 
-    private static void validateCartState(Account account, Cart cart) {
-        if (cart.isEmpty()) throw new IllegalArgumentException("Cart cannot be empty");
+    private static void validateCartState(@NonNull Account account, @NonNull Cart cart) {
+        if (cart.isEmpty()) {
+            throw new IllegalArgumentException("Cart cannot be empty");
+        }
         if (!cart.getAccountId().equals(account.getAccountId())) {
             throw new IllegalArgumentException("Cart doesn't belong to the provided account");
         }
     }
 
-    private void validateAvailability(Cart cart) {
-        for (CartItem item : cart.getItems()) {
-            Product product = productInventoryService.findProductById(item.getProduct().getId());
-
-            if (product.getQuantity() < item.getQuantity())
-                throw new ProductUnavailableException(product.getId(), item.getQuantity(), product.getQuantity());
-        }
-    }
-
-    private List<OrderItem> createOrderItems(@NonNull Cart cart) {
-        return cart.getItems().stream().map(cartItem -> {
-                    Product product = productInventoryService.findProductById(cartItem.getProduct().getId());
+    private List<OrderItem> createOrderItems(@NonNull List<CartItem> cartItems, @NonNull List<Product> reservedProducts) {
+        return IntStream.range(0, cartItems.size())
+                .mapToObj(index -> {
+                    CartItem cartItem = cartItems.get(index);
+                    Product product = reservedProducts.get(index);
 
                     return OrderItem.builder()
                             .product(product)
@@ -101,11 +90,7 @@ public class OrderProcessor {
                 .toList();
     }
 
-    private void decreaseProductStock(List<OrderItem> orderItems) {
-        orderItems.forEach(item -> productInventoryService.decreaseStock(item.product().getId(), item.quantity()));
-    }
-
-    private Order createOrder(Account account, List<OrderItem> orderItems, BigDecimal finalPrice) {
+    private Order createOrder(@NonNull Account account, @NonNull List<OrderItem> orderItems, @NonNull BigDecimal finalPrice) {
         return Order.builder()
                 .account(account)
                 .items(orderItems)

@@ -1,6 +1,7 @@
 package onlineshop.service.product;
 
 import lombok.NonNull;
+import onlineshop.domain.cart.CartItem;
 import onlineshop.domain.product.Product;
 import onlineshop.exception.ProductNotFoundException;
 import onlineshop.exception.ProductUnavailableException;
@@ -8,9 +9,12 @@ import onlineshop.repo.ProductRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class ProductInventoryService {
     private final ProductRepository productRepository;
+
+    private final Object stockLock = new Object();
 
     public ProductInventoryService(@NonNull ProductRepository productRepository) {
         this.productRepository = productRepository;
@@ -25,7 +29,7 @@ public class ProductInventoryService {
     }
 
     public void updateProduct(@NonNull String id, @NonNull Product product) {
-        productRepository.changeSpecification(id, product);
+        productRepository.updateProduct(id, product);
     }
 
     public void changePrice(@NonNull String id, @NonNull BigDecimal newPrice) {
@@ -45,15 +49,45 @@ public class ProductInventoryService {
     }
 
     public void increaseStock(@NonNull String id, int amount) {
-        findProductById(id).increaseQuantity(amount);
+        synchronized (stockLock) {
+            findProductById(id).increaseQuantity(amount);
+        }
     }
 
     public void decreaseStock(@NonNull String id, int amount) {
-        Product product = findProductById(id);
+        synchronized (stockLock) {
+            Product product = findProductById(id);
 
-        if (product.getQuantity() < amount) throw new ProductUnavailableException(
-                product.getId(), amount, product.getQuantity());
+            if (product.getQuantity() < amount) {
+                throw new ProductUnavailableException(product.getId(), amount, product.getQuantity());
+            }
 
-        product.decreaseQuantity(amount);
+            product.decreaseQuantity(amount);
+        }
+    }
+
+    public List<Product> reserveStock(@NonNull List<CartItem> cartItems) {
+        synchronized (stockLock) {
+            List<Product> products = cartItems.stream()
+                    .map(cartItem -> {
+                        Product product = findProductById(cartItem.getProduct().getId());
+
+                        if (product.getQuantity() < cartItem.getQuantity()) {
+                            throw new ProductUnavailableException(
+                                    product.getId(),
+                                    cartItem.getQuantity(),
+                                    product.getQuantity()
+                            );
+                        }
+
+                        return product;
+                    })
+                    .toList();
+
+            IntStream.range(0, cartItems.size())
+                    .forEach(index -> products.get(index).decreaseQuantity(cartItems.get(index).getQuantity()));
+
+            return products;
+        }
     }
 }

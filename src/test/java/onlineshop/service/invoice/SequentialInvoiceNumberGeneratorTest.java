@@ -25,13 +25,16 @@ class SequentialInvoiceNumberGeneratorTest {
 
     @Test
     void shouldStartFromOneWhenNoInvoicesExist() {
+        //Arrange
         SequentialInvoiceNumberGenerator generator = new SequentialInvoiceNumberGenerator(List.of(), CLOCK);
 
+        //Assert
         assertThat(generator.generate()).isEqualTo("INV-" + Year.now(CLOCK).getValue() + "/1");
     }
 
     @Test
     void shouldContinueFromHighestExistingNumber() {
+        //Arrange
         Invoice first = mock(Invoice.class);
         Invoice second = mock(Invoice.class);
 
@@ -43,14 +46,17 @@ class SequentialInvoiceNumberGeneratorTest {
         when(second.getInvoiceNumber())
                 .thenReturn("INV-" + year + "/7");
 
+        //Act
         SequentialInvoiceNumberGenerator generator = new SequentialInvoiceNumberGenerator(List.of(first, second), CLOCK);
 
+        //Assert
         assertThat(generator.generate())
                 .isEqualTo("INV-" + year + "/8");
     }
 
     @Test
     void shouldIgnoreInvoicesFromPreviousYear() {
+        //Arrange
         Invoice invoice = mock(Invoice.class);
 
         int currentYear = Year.now(CLOCK).getValue();
@@ -58,18 +64,22 @@ class SequentialInvoiceNumberGeneratorTest {
         when(invoice.getInvoiceNumber())
                 .thenReturn("INV-" + (currentYear - 1) + "/100");
 
+        //Act
         SequentialInvoiceNumberGenerator generator = new SequentialInvoiceNumberGenerator(List.of(invoice), CLOCK);
 
+        //Assert
         assertThat(generator.generate())
                 .isEqualTo("INV-" + currentYear + "/1");
     }
 
     @Test
     void shouldGenerateSequentialNumbers() {
+        //Arrange
         SequentialInvoiceNumberGenerator generator = new SequentialInvoiceNumberGenerator(List.of(), CLOCK);
 
         int year = Year.now(CLOCK).getValue();
 
+        //Assert
         assertThat(generator.generate())
                 .isEqualTo("INV-" + year + "/1");
 
@@ -79,6 +89,7 @@ class SequentialInvoiceNumberGeneratorTest {
 
     @Test
     void shouldGenerateUniqueNumbersConcurrently() {
+        //Arrange
         int numberOfTasks = 100;
 
         try (ExecutorService executor = Executors.newFixedThreadPool(8)) {
@@ -87,6 +98,7 @@ class SequentialInvoiceNumberGeneratorTest {
                     new SequentialInvoiceNumberGenerator(List.of(), CLOCK);
 
             try {
+                //Act
                 List<Callable<String>> tasks =
                         IntStream.range(0, numberOfTasks)
                                 .mapToObj(i -> (Callable<String>) generator::generate)
@@ -105,6 +117,7 @@ class SequentialInvoiceNumberGeneratorTest {
                         })
                         .toList();
 
+                //Assert
                 assertThat(numbers)
                         .hasSize(numberOfTasks)
                         .doesNotHaveDuplicates();

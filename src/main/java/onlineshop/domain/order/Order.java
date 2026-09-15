@@ -37,8 +37,12 @@ public class Order {
             @NonNull Instant orderDate,
             @NonNull OrderStatus orderStatus
     ) {
-        if (items.isEmpty()) throw new IllegalArgumentException("Order must contain at least one item");
-        if (totalPrice.signum() < 0) throw new IllegalArgumentException("Total price cannot be negative");
+        if (items.isEmpty()) {
+            throw new IllegalArgumentException("Order must contain at least one item");
+        }
+        if (totalPrice.signum() < 0) {
+            throw new IllegalArgumentException("Total price cannot be negative");
+        }
 
         this.orderId = orderId;
         this.account = account;

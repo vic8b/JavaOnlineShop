@@ -9,7 +9,9 @@ public record Email(@NonNull String value) {
             + "[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$");
 
     public Email {
-        if (!isPatternValid(value)) throw new IllegalArgumentException("Email is incorrect");
+        if (!isPatternValid(value)) {
+            throw new IllegalArgumentException("Email is incorrect");
+        }
     }
 
     private static boolean isPatternValid(String email) {
