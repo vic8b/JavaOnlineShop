@@ -7,8 +7,7 @@ import onlineshop.domain.order.Order;
 import onlineshop.domain.product.Product;
 import onlineshop.domain.useraccount.Account;
 import onlineshop.exception.ProductUnavailableException;
-import onlineshop.repo.InvoiceRepository;
-import onlineshop.repo.OrderRepository;
+import onlineshop.repo.*;
 import onlineshop.service.discount.PricingService;
 import onlineshop.service.invoice.InvoiceGenerator;
 import onlineshop.service.product.ProductManager;
@@ -302,8 +301,8 @@ class OrderProcessorTest {
                 cart
         );
 
-        inOrder.verify(pricingService).calculateFinalPrice(anyList());
         inOrder.verify(productManager).decreaseStock("PROD-1", 2);
+        inOrder.verify(pricingService).calculateFinalPrice(anyList());
         inOrder.verify(orderRepository).add(any(Order.class));
         inOrder.verify(invoiceGenerator).generate(any(Order.class));
         inOrder.verify(invoiceRepository).add(invoice);

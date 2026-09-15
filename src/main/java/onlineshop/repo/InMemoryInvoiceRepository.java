@@ -5,12 +5,13 @@ import onlineshop.domain.invoice.Invoice;
 import onlineshop.exception.InvoiceAlreadyExistsException;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryInvoiceRepository implements InvoiceRepository {
-    private final Map<UUID, Invoice> invoiceRepo = new HashMap<>();
+    private final Map<UUID, Invoice> invoiceRepo = new ConcurrentHashMap<>();
 
     @Override
-    public void add(@NonNull Invoice invoice) {
+    public synchronized void add(@NonNull Invoice invoice) {
         if (findByNumber(invoice.getInvoiceNumber()).isPresent()) {
             throw InvoiceAlreadyExistsException.forNumber(invoice.getInvoiceNumber());
         }

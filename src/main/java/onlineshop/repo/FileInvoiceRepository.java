@@ -13,10 +13,11 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 public class FileInvoiceRepository implements InvoiceRepository {
-    private final Map<UUID, Invoice> invoiceRepo = new HashMap<>();
+    private final Map<UUID, Invoice> invoiceRepo = new ConcurrentHashMap<>();
     private final Path file;
     private final OrderRepository orderRepository;
 
@@ -29,7 +30,7 @@ public class FileInvoiceRepository implements InvoiceRepository {
     }
 
     @Override
-    public void add(@NonNull Invoice invoice) {
+    public synchronized void add(@NonNull Invoice invoice) {
         if (findByNumber(invoice.getInvoiceNumber()).isPresent()) {
             throw InvoiceAlreadyExistsException.forNumber(invoice.getInvoiceNumber());
         }
@@ -169,7 +170,7 @@ public class FileInvoiceRepository implements InvoiceRepository {
         } catch (InvoicePersistenceException e) {
             throw e;
         } catch (RuntimeException e) {
-            throw new InvoicePersistenceException("Could not deserialize invoice:" + invoiceLine, e);
+            throw new InvoicePersistenceException("Could not deserialize invoice: " + invoiceLine, e);
         }
     }
 }
