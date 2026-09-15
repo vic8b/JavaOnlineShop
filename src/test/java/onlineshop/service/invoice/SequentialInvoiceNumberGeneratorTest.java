@@ -19,15 +19,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class SequentialInvoiceNumberGeneratorTest {
-    Instant fixedInstant = Instant.parse("2026-08-02T12:00:00Z");
+    private static final Instant FIXED_INSTANT = Instant.parse("2026-08-02T12:00:00Z");
 
-    Clock clock = Clock.fixed(fixedInstant, ZoneOffset.UTC);
+    private static final Clock CLOCK = Clock.fixed(FIXED_INSTANT, ZoneOffset.UTC);
 
     @Test
     void shouldStartFromOneWhenNoInvoicesExist() {
-        SequentialInvoiceNumberGenerator generator = new SequentialInvoiceNumberGenerator(List.of(), clock);
+        SequentialInvoiceNumberGenerator generator = new SequentialInvoiceNumberGenerator(List.of(), CLOCK);
 
-        assertThat(generator.generate()).isEqualTo("INV-" + Year.now(clock).getValue() + "/1");
+        assertThat(generator.generate()).isEqualTo("INV-" + Year.now(CLOCK).getValue() + "/1");
     }
 
     @Test
@@ -35,7 +35,7 @@ class SequentialInvoiceNumberGeneratorTest {
         Invoice first = mock(Invoice.class);
         Invoice second = mock(Invoice.class);
 
-        int year = Year.now(clock).getValue();
+        int year = Year.now(CLOCK).getValue();
 
         when(first.getInvoiceNumber())
                 .thenReturn("INV-" + year + "/2");
@@ -43,7 +43,7 @@ class SequentialInvoiceNumberGeneratorTest {
         when(second.getInvoiceNumber())
                 .thenReturn("INV-" + year + "/7");
 
-        SequentialInvoiceNumberGenerator generator = new SequentialInvoiceNumberGenerator(List.of(first, second), clock);
+        SequentialInvoiceNumberGenerator generator = new SequentialInvoiceNumberGenerator(List.of(first, second), CLOCK);
 
         assertThat(generator.generate())
                 .isEqualTo("INV-" + year + "/8");
@@ -53,12 +53,12 @@ class SequentialInvoiceNumberGeneratorTest {
     void shouldIgnoreInvoicesFromPreviousYear() {
         Invoice invoice = mock(Invoice.class);
 
-        int currentYear = Year.now(clock).getValue();
+        int currentYear = Year.now(CLOCK).getValue();
 
         when(invoice.getInvoiceNumber())
                 .thenReturn("INV-" + (currentYear - 1) + "/100");
 
-        SequentialInvoiceNumberGenerator generator = new SequentialInvoiceNumberGenerator(List.of(invoice), clock);
+        SequentialInvoiceNumberGenerator generator = new SequentialInvoiceNumberGenerator(List.of(invoice), CLOCK);
 
         assertThat(generator.generate())
                 .isEqualTo("INV-" + currentYear + "/1");
@@ -66,9 +66,9 @@ class SequentialInvoiceNumberGeneratorTest {
 
     @Test
     void shouldGenerateSequentialNumbers() {
-        SequentialInvoiceNumberGenerator generator = new SequentialInvoiceNumberGenerator(List.of(), clock);
+        SequentialInvoiceNumberGenerator generator = new SequentialInvoiceNumberGenerator(List.of(), CLOCK);
 
-        int year = Year.now(clock).getValue();
+        int year = Year.now(CLOCK).getValue();
 
         assertThat(generator.generate())
                 .isEqualTo("INV-" + year + "/1");
@@ -84,7 +84,7 @@ class SequentialInvoiceNumberGeneratorTest {
         try (ExecutorService executor = Executors.newFixedThreadPool(8)) {
 
             SequentialInvoiceNumberGenerator generator =
-                    new SequentialInvoiceNumberGenerator(List.of(), clock);
+                    new SequentialInvoiceNumberGenerator(List.of(), CLOCK);
 
             try {
                 List<Callable<String>> tasks =

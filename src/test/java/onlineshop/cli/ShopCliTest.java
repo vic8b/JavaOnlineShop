@@ -11,7 +11,7 @@ import onlineshop.exception.ProductUnavailableException;
 import onlineshop.service.invoice.InvoiceQueryService;
 import onlineshop.service.order.OrderProcessingService;
 import onlineshop.service.order.OrderQueryService;
-import onlineshop.service.product.ProductManager;
+import onlineshop.service.product.ProductInventoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.*;
 class ShopCliTest {
 
     @Mock
-    private ProductManager productManager;
+    private ProductInventoryService productInventoryService;
 
     @Mock
     private OrderProcessingService orderProcessingService;
@@ -54,7 +54,7 @@ class ShopCliTest {
     @BeforeEach
     void setup() {
         shopCli = new ShopCli(
-                productManager,
+                productInventoryService,
                 orderProcessingService,
                 account,
                 cart,
@@ -77,13 +77,13 @@ class ShopCliTest {
                         Option.EXIT.getOptionNumber()
                 );
 
-        when(productManager.findAllProducts()).thenReturn(List.of(product));
+        when(productInventoryService.findAllProducts()).thenReturn(List.of(product));
 
         //Act
         shopCli.run();
 
         //Assert
-        verify(productManager).findAllProducts();
+        verify(productInventoryService).findAllProducts();
         verify(consolePrinter).printProduct(product);
         verify(consolePrinter).print("End of program");
     }
@@ -97,13 +97,13 @@ class ShopCliTest {
                         Option.EXIT.getOptionNumber()
                 );
 
-        when(productManager.findAllProducts()).thenReturn(List.of());
+        when(productInventoryService.findAllProducts()).thenReturn(List.of());
 
         //Act
         shopCli.run();
 
         //Assert
-        verify(productManager).findAllProducts();
+        verify(productInventoryService).findAllProducts();
         verify(consolePrinter).print("No products available");
     }
 
@@ -122,12 +122,12 @@ class ShopCliTest {
         when(dataReader.readLine("Enter product id: ")).thenReturn("1");
         when(dataReader.readInt("Enter quantity: ")).thenReturn(1);
 
-        when(productManager.findProductById("1")).thenReturn(product);
+        when(productInventoryService.findProductById("1")).thenReturn(product);
 
         shopCli.run();
 
         //Assert
-        verify(productManager).findProductById("1");
+        verify(productInventoryService).findProductById("1");
         verify(consolePrinter).print("Product has been added to the cart");
         verify(cart).addProduct(product, 1);
     }
@@ -144,13 +144,13 @@ class ShopCliTest {
         when(dataReader.readLine("Enter product id: ")).thenReturn("1");
         when(dataReader.readInt("Enter quantity: ")).thenReturn(1);
 
-        when(productManager.findProductById("1")).thenThrow(new ProductNotFoundException("1"));
+        when(productInventoryService.findProductById("1")).thenThrow(new ProductNotFoundException("1"));
 
         //Act
         shopCli.run();
 
         //Act + Assert
-        verify(productManager).findProductById("1");
+        verify(productInventoryService).findProductById("1");
         verify(consolePrinter).print("Product with id 1 not found");
         verify(cart, never()).addProduct(any(), anyInt());
     }
@@ -168,7 +168,7 @@ class ShopCliTest {
 
         when(dataReader.readLine("Enter product id: ")).thenReturn("1");
         when(dataReader.readInt("Enter quantity: ")).thenReturn(1);
-        when(productManager.findProductById("1")).thenReturn(product);
+        when(productInventoryService.findProductById("1")).thenReturn(product);
 
         doThrow(new IllegalArgumentException("Required quantity exceeds item availability"))
                 .when(cart).addProduct(product, 1);
@@ -177,7 +177,7 @@ class ShopCliTest {
         shopCli.run();
 
         //Act + Assert
-        verify(productManager).findProductById("1");
+        verify(productInventoryService).findProductById("1");
         verify(cart).addProduct(product, 1);
         verify(consolePrinter).print("Required quantity exceeds item availability");
     }
@@ -237,7 +237,7 @@ class ShopCliTest {
                         Option.EXIT.getOptionNumber()
                 );
 
-        when(orderProcessingService.process(account, cart)).thenReturn(order);
+        when(orderProcessingService.processCheckout(account, cart)).thenReturn(order);
 
         //Act
         shopCli.run();
@@ -257,7 +257,7 @@ class ShopCliTest {
                         Option.EXIT.getOptionNumber()
                 );
 
-        when(orderProcessingService.process(account, cart)).thenThrow(new IllegalArgumentException("Cart cannot be empty"));
+        when(orderProcessingService.processCheckout(account, cart)).thenThrow(new IllegalArgumentException("Cart cannot be empty"));
 
         //Act
         shopCli.run();
@@ -279,7 +279,7 @@ class ShopCliTest {
                         Option.EXIT.getOptionNumber()
                 );
 
-        when(orderProcessingService.process(account, cart)).thenThrow(productUnavailableException);
+        when(orderProcessingService.processCheckout(account, cart)).thenThrow(productUnavailableException);
 
         //Act
         shopCli.run();

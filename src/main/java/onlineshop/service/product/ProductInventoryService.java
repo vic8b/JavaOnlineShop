@@ -9,10 +9,10 @@ import onlineshop.repo.ProductRepository;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class ProductManager {
+public class ProductInventoryService {
     private final ProductRepository productRepository;
 
-    public ProductManager(ProductRepository productRepository) {
+    public ProductInventoryService(@NonNull ProductRepository productRepository) {
         this.productRepository = productRepository;
     }
 
@@ -49,11 +49,11 @@ public class ProductManager {
     }
 
     public void decreaseStock(@NonNull String id, int amount) {
-        Product productById = findProductById(id);
+        Product product = findProductById(id);
 
-        if (productById.getQuantity() < amount) throw new ProductUnavailableException(
-                productById.getId(), amount, productById.getQuantity());
+        if (product.getQuantity() < amount) throw new ProductUnavailableException(
+                product.getId(), amount, product.getQuantity());
 
-        productById.decreaseQuantity(amount);
+        product.decreaseQuantity(amount);
     }
 }

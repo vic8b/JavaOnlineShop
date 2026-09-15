@@ -19,7 +19,7 @@ public class PricingService {
         if (items.isEmpty()) throw new IllegalArgumentException("Items cannot be empty");
 
         BigDecimal regularPrice = items.stream()
-                .map(OrderItem::getTotalPrice)
+                .map(OrderItem::totalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal discount = discountPolicy.calculateDiscount(items, regularPrice);

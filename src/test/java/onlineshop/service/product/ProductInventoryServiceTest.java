@@ -20,14 +20,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ProductManagerTest {
+class ProductInventoryServiceTest {
     Computer testComputer;
 
     @Mock
     private ProductRepository productRepository;
 
     @InjectMocks
-    private ProductManager productManager;
+    private ProductInventoryService productInventoryService;
 
     @BeforeEach
     void setup() {
@@ -44,7 +44,7 @@ class ProductManagerTest {
     @Test
     void shouldSuccessfullyAddProductToRepo() {
         //Act
-        productManager.addProduct(testComputer);
+        productInventoryService.addProduct(testComputer);
 
         //Assert
         verify(productRepository).add(testComputer);
@@ -56,7 +56,7 @@ class ProductManagerTest {
         when(productRepository.delete("1")).thenReturn(true);
 
         //Act
-        boolean result = productManager.deleteProduct("1");
+        boolean result = productInventoryService.deleteProduct("1");
 
         //Assert
         assertThat(result).isTrue();
@@ -69,7 +69,7 @@ class ProductManagerTest {
         when(productRepository.delete("1")).thenReturn(false);
 
         //Act
-        boolean result = productManager.deleteProduct("1");
+        boolean result = productInventoryService.deleteProduct("1");
 
         //Assert
         assertThat(result).isFalse();
@@ -79,7 +79,7 @@ class ProductManagerTest {
     @Test
     void shouldSuccessfullyUpdateProduct() {
         //Act
-        productManager.updateProduct("1", testComputer);
+        productInventoryService.updateProduct("1", testComputer);
 
         //Assert
         verify(productRepository).changeSpecification("1", testComputer);
@@ -92,7 +92,7 @@ class ProductManagerTest {
                 .thenReturn(Optional.ofNullable(testComputer));
 
         //Act
-        Product productById = productManager.findProductById("1");
+        Product productById = productInventoryService.findProductById("1");
 
         //Assert
         assertThat(productById)
@@ -106,7 +106,7 @@ class ProductManagerTest {
                 .thenReturn(List.of(testComputer));
 
         //Act
-        List<Product> allProducts = productManager.findAllProducts();
+        List<Product> allProducts = productInventoryService.findAllProducts();
 
         //Assert
         assertThat(allProducts)
@@ -116,7 +116,7 @@ class ProductManagerTest {
     @Test
     void shouldThrowExceptionWhenProductIdNotFound() {
         //Act + Assert
-        assertThatThrownBy(() -> productManager.findProductById("1"))
+        assertThatThrownBy(() -> productInventoryService.findProductById("1"))
                 .hasMessage("Product with id 1 not found");
     }
 
@@ -127,7 +127,7 @@ class ProductManagerTest {
                 .thenReturn(Optional.of(testComputer));
 
         //Act
-        productManager.increaseStock("1", 1);
+        productInventoryService.increaseStock("1", 1);
 
         //Assert
         assertThat(testComputer.getQuantity())
@@ -142,7 +142,7 @@ class ProductManagerTest {
                 .thenReturn(Optional.of(testComputer));
 
         //Act
-        productManager.decreaseStock("1", 1);
+        productInventoryService.decreaseStock("1", 1);
 
         //Assert
         assertThat(testComputer.getQuantity())
@@ -158,7 +158,7 @@ class ProductManagerTest {
                 .thenReturn(Optional.of(testComputer));
 
         //Act
-        productManager.changePrice("1", newPrice);
+        productInventoryService.changePrice("1", newPrice);
 
         //Assert
         assertThat(testComputer.getPrice())
@@ -174,7 +174,7 @@ class ProductManagerTest {
                 .thenReturn(Optional.of(testComputer));
 
         //Act + Assert
-        assertThatThrownBy(() -> productManager.changePrice("1", newPrice))
+        assertThatThrownBy(() -> productInventoryService.changePrice("1", newPrice))
                 .hasMessage("Update price must be positive");
         verify(productRepository).findById("1");
     }

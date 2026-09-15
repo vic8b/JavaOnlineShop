@@ -68,7 +68,7 @@ class SmartphoneTest {
                 .accessory("case")
                 .accessory("charger")
                 .build())
-                .hasMessage("Price cannot be negative");
+                .hasMessage("Price must be positive");
     }
 
     @Test

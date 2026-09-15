@@ -11,12 +11,12 @@ import onlineshop.exception.ProductUnavailableException;
 import onlineshop.service.invoice.InvoiceQueryService;
 import onlineshop.service.order.OrderProcessingService;
 import onlineshop.service.order.OrderQueryService;
-import onlineshop.service.product.ProductManager;
+import onlineshop.service.product.ProductInventoryService;
 
 import java.util.List;
 
 public class ShopCli {
-    private final ProductManager productManager;
+    private final ProductInventoryService productInventoryService;
     private final OrderProcessingService orderProcessingService;
     private final Account account;
     private final Cart cart;
@@ -25,7 +25,7 @@ public class ShopCli {
     private final DataReader dataReader;
     private final ConsolePrinter printer;
 
-    public ShopCli(@NonNull ProductManager productManager,
+    public ShopCli(@NonNull ProductInventoryService productInventoryService,
                    @NonNull OrderProcessingService orderProcessingService,
                    @NonNull Account account,
                    @NonNull Cart cart,
@@ -34,7 +34,7 @@ public class ShopCli {
                    @NonNull DataReader dataReader,
                    @NonNull ConsolePrinter printer
     ) {
-        this.productManager = productManager;
+        this.productInventoryService = productInventoryService;
         this.orderProcessingService = orderProcessingService;
         this.account = account;
         this.cart = cart;
@@ -77,7 +77,7 @@ public class ShopCli {
 
     private void showProducts() {
         printer.print("Products:");
-        List<Product> allProducts = productManager.findAllProducts();
+        List<Product> allProducts = productInventoryService.findAllProducts();
 
         if (allProducts.isEmpty()) {
             printer.print("No products available");
@@ -92,7 +92,7 @@ public class ShopCli {
         int quantity = dataReader.readInt("Enter quantity: ");
 
         try {
-            Product product = productManager.findProductById(productId);
+            Product product = productInventoryService.findProductById(productId);
             cart.addProduct(product, quantity);
 
             printer.print("Product has been added to the cart");
@@ -114,7 +114,7 @@ public class ShopCli {
 
     private void checkout() {
         try {
-            Order order = orderProcessingService.process(account, cart);
+            Order order = orderProcessingService.processCheckout(account, cart);
 
             printer.print("Order placed successfully");
             printer.printOrder(order);

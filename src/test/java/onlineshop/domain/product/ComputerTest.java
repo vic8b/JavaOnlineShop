@@ -66,7 +66,7 @@ class ComputerTest {
                 .cpu("Intel")
                 .ram("64 GB")
                 .build())
-                .hasMessage("Price cannot be negative");
+                .hasMessage("Price must be positive");
     }
 
     @Test

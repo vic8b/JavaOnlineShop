@@ -1,5 +1,6 @@
 package onlineshop.service.order;
 
+import lombok.extern.slf4j.Slf4j;
 import onlineshop.domain.cart.Cart;
 import onlineshop.domain.order.Order;
 import onlineshop.domain.useraccount.Account;
@@ -21,10 +22,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
+@Slf4j
 @ExtendWith(MockitoExtension.class)
 class OrderProcessingServiceTest {
     private static final int ORDER_COUNT = 100;
-    private static final long PROCESSING_DELAY_IN_MS = 100;
+    private static final long PROCESSING_DELAY_IN_MS = 50;
 
     @Mock
     OrderProcessor orderProcessor;
@@ -56,39 +58,39 @@ class OrderProcessingServiceTest {
     @Test
     void shouldDelegateSynchronousProcessing() {
         //Arrange
-        when(orderProcessor.process(account, cart))
+        when(orderProcessor.processCheckout(account, cart))
                 .thenReturn(order);
 
         //Act
-        Order result = orderProcessingService.process(account, cart);
+        Order result = orderProcessingService.processCheckout(account, cart);
 
         //Assert
         assertThat(result).isSameAs(order);
-        verify(orderProcessor).process(account, cart);
+        verify(orderProcessor).processCheckout(account, cart);
     }
 
     @Test
-    void shouldProcessAsynchronously() {
+    void shouldProcessCheckoutAsynchronously() {
         //Arrange
-        when(orderProcessor.process(account, cart))
+        when(orderProcessor.processCheckout(account, cart))
                 .thenReturn(order);
 
         //Act
-        CompletableFuture<Order> result = orderProcessingService.processAsync(account, cart);
+        CompletableFuture<Order> result = orderProcessingService.processCheckoutAsync(account, cart);
 
         //Assert
         assertThat(result.join()).isSameAs(order);
-        verify(orderProcessor).process(account, cart);
+        verify(orderProcessor).processCheckout(account, cart);
     }
 
     @Test
     void shouldCompleteFutureExceptionallyWhenProcessingFails() {
         //Arrange
-        when(orderProcessor.process(account, cart))
+        when(orderProcessor.processCheckout(account, cart))
                 .thenThrow(new IllegalArgumentException("Invalid cart"));
 
         //Act
-        CompletableFuture<Order> future = orderProcessingService.processAsync(account, cart);
+        CompletableFuture<Order> future = orderProcessingService.processCheckoutAsync(account, cart);
 
         //Assert
         assertThat(future).isCompletedExceptionally();
@@ -108,13 +110,13 @@ class OrderProcessingServiceTest {
 
         long synchronousStart = System.nanoTime();
 
-        List<Order> synchronousOrders = processSynchronously(accounts, carts);
+        List<Order> synchronousOrders = processCheckoutSynchronously(accounts, carts);
 
         long synchronousDuration = System.nanoTime() - synchronousStart;
 
         long asynchronousStart = System.nanoTime();
 
-        List<Order> asynchronousOrders = processAsynchronously(accounts, carts);
+        List<Order> asynchronousOrders = processCheckoutAsynchronously(accounts, carts);
 
         long asynchronousDuration = System.nanoTime() - asynchronousStart;
 
@@ -124,17 +126,13 @@ class OrderProcessingServiceTest {
 
         assertThat(asynchronousDuration).isLessThan(synchronousDuration);
 
-        System.out.printf(
-                "Synchronous processing: %d ms%n" +
-                "Asynchronous processing: %d ms%n",
-                TimeUnit.NANOSECONDS.toMillis(synchronousDuration),
-                TimeUnit.NANOSECONDS.toMillis(asynchronousDuration)
-        );
+        log.info("Synchronous processing: {} ms\n", TimeUnit.NANOSECONDS.toMillis(synchronousDuration));
+        log.info("Asynchronous processing: {} ms\n", TimeUnit.NANOSECONDS.toMillis(asynchronousDuration));
     }
 
-    private List<Order> processAsynchronously(List<Account> accounts, List<Cart> carts) {
+    private List<Order> processCheckoutAsynchronously(List<Account> accounts, List<Cart> carts) {
         List<CompletableFuture<Order>> futures = IntStream.range(0, accounts.size())
-                .mapToObj(index -> orderProcessingService.processAsync(accounts.get(index), carts.get(index)))
+                .mapToObj(index -> orderProcessingService.processCheckoutAsync(accounts.get(index), carts.get(index)))
                 .toList();
 
         return futures.stream()
@@ -142,9 +140,9 @@ class OrderProcessingServiceTest {
                 .toList();
     }
 
-    private List<Order> processSynchronously(List<Account> accounts, List<Cart> carts) {
+    private List<Order> processCheckoutSynchronously(List<Account> accounts, List<Cart> carts) {
         return IntStream.range(0, accounts.size())
-                .mapToObj(index -> orderProcessingService.process(accounts.get(index), carts.get(index)))
+                .mapToObj(index -> orderProcessingService.processCheckout(accounts.get(index), carts.get(index)))
                 .toList();
     }
 
@@ -154,7 +152,7 @@ class OrderProcessingServiceTest {
             Cart currentCart = carts.get(i);
             Order expectedOrder = orders.get(i);
 
-            when(orderProcessor.process(currentAccount, currentCart))
+            when(orderProcessor.processCheckout(currentAccount, currentCart))
                     .thenAnswer(invocationOnMock -> {
                         Thread.sleep(PROCESSING_DELAY_IN_MS);
                         return expectedOrder;

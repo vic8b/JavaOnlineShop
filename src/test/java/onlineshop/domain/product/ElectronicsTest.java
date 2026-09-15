@@ -54,7 +54,7 @@ class ElectronicsTest {
                 .price(new BigDecimal("-10"))
                 .quantity(1)
                 .build())
-                .hasMessage("Price cannot be negative");
+                .hasMessage("Price must be positive");
     }
 
     @Test

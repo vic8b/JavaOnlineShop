@@ -1,6 +1,7 @@
 package onlineshop.repo;
 
 import onlineshop.domain.useraccount.Account;
+import onlineshop.domain.useraccount.Email;
 import onlineshop.exception.AccountAlreadyExistsException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,7 @@ class InMemoryAccountRepositoryTest {
                 .accountId("1")
                 .firstName("John")
                 .lastName("Doe")
-                .email("john@gmail.com")
+                .email(new Email("john@gmail.com"))
                 .build();
     }
 
@@ -42,7 +43,7 @@ class InMemoryAccountRepositoryTest {
                 .accountId("1")
                 .firstName("John")
                 .lastName("Doe")
-                .email("john@gmail.com")
+                .email(new Email("john@gmail.com"))
                 .build();
 
         accountRepository.add(account);
@@ -69,7 +70,7 @@ class InMemoryAccountRepositoryTest {
                 .accountId("2")
                 .firstName("Mark")
                 .lastName("John")
-                .email("mark@gmail.com")
+                .email(new Email("john@gmail.com"))
                 .build();
 
         accountRepository.add(account);

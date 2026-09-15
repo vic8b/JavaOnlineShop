@@ -1,22 +1,22 @@
 package onlineshop.repo;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import onlineshop.domain.product.Product;
 import onlineshop.exception.ProductAlreadyExistsException;
 import onlineshop.exception.ProductNotFoundException;
 
 import java.util.*;
 
+@Slf4j
 public class InMemoryProductRepository implements ProductRepository {
     private final Map<String, Product> productsRepo = new HashMap<>();
 
     @Override
     public void add(@NonNull Product product) {
-        if (productsRepo.putIfAbsent(product.getId(), product) != null) {
-            throw new ProductAlreadyExistsException(product.getId());
-        }
+        validateIfProductAlreadyExists(product);
 
-        System.out.println("Product: " + product + " has been added to repository");
+        log.info("Product {} has been added to the repository", product);
     }
 
     @Override
@@ -41,5 +41,11 @@ public class InMemoryProductRepository implements ProductRepository {
     @Override
     public List<Product> findAll() {
         return List.copyOf(productsRepo.values());
+    }
+
+    private void validateIfProductAlreadyExists(Product product) {
+        if (productsRepo.putIfAbsent(product.getId(), product) != null) {
+            throw new ProductAlreadyExistsException(product.getId());
+        }
     }
 }

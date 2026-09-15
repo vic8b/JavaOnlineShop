@@ -3,6 +3,7 @@ package onlineshop.domain.cart;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import onlineshop.domain.product.Product;
 import onlineshop.exception.CartItemNotFoundException;
 
@@ -12,6 +13,7 @@ import java.util.Map;
 
 @Getter
 @EqualsAndHashCode
+@Slf4j
 public class Cart {
     @NonNull
     private final String accountId;
@@ -28,7 +30,7 @@ public class Cart {
             items.put(product.getId(), new CartItem(product, quantity));
         } else {
             cartItem.changeQuantity(cartItem.getQuantity() + quantity);
-            System.out.println("Item already in the cart. Quantity has been changed to " + cartItem.getQuantity());
+            log.info("Item already in the cart. Quantity has been changed to {}", cartItem.getQuantity());
         }
     }
 

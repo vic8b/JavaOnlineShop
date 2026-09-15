@@ -10,13 +10,14 @@ import onlineshop.domain.product.Computer;
 import onlineshop.domain.product.Electronics;
 import onlineshop.domain.product.Smartphone;
 import onlineshop.domain.useraccount.Account;
+import onlineshop.domain.useraccount.Email;
 import onlineshop.repo.*;
 import onlineshop.service.discount.PricingService;
 import onlineshop.service.invoice.*;
 import onlineshop.service.order.OrderProcessingService;
 import onlineshop.service.order.OrderProcessor;
 import onlineshop.service.order.OrderQueryService;
-import onlineshop.service.product.ProductManager;
+import onlineshop.service.product.ProductInventoryService;
 
 import java.math.BigDecimal;
 import java.nio.file.Path;
@@ -37,11 +38,11 @@ public class ShopApp {
                 new SequentialInvoiceNumberGenerator(invoiceRepository.findAll(), clock);
 
         InvoiceGenerator invoiceService = new InvoiceService(invoiceNumberGenerator, clock);
-        ProductManager productManager = new ProductManager(productRepository);
+        ProductInventoryService productInventoryService = new ProductInventoryService(productRepository);
         DiscountPolicy discountPolicy = new OrderValuePercentageDiscount(new BigDecimal("500"), new BigDecimal("10"));
         PricingService pricingService = new PricingService(discountPolicy);
         OrderProcessor orderProcessor = new OrderProcessor(
-                productManager,
+                productInventoryService,
                 orderRepository,
                 invoiceRepository,
                 invoiceService,
@@ -55,7 +56,7 @@ public class ShopApp {
         ConsolePrinter consolePrinter = new ConsolePrinter(zoneId);
         DataReader dataReader = new DataReader(consolePrinter);
 
-        addTestProducts(productManager);
+        addTestProducts(productInventoryService);
 
         try (OrderProcessingService orderProcessingService
                      = new OrderProcessingService(
@@ -63,7 +64,7 @@ public class ShopApp {
         ) {
 
             new ShopCli(
-                    productManager,
+                    productInventoryService,
                     orderProcessingService,
                     account,
                     cart,
@@ -80,12 +81,12 @@ public class ShopApp {
                 .accountId("1")
                 .firstName("John")
                 .lastName("Doe")
-                .email("john@example.com")
+                .email(new Email("john@example.com"))
                 .build();
     }
 
-    private static void addTestProducts(ProductManager productManager) {
-        productManager.addProduct(
+    private static void addTestProducts(ProductInventoryService productInventoryService) {
+        productInventoryService.addProduct(
                 Computer.builder()
                         .id("C-001")
                         .name("testComputer")
@@ -96,7 +97,7 @@ public class ShopApp {
                         .build()
         );
 
-        productManager.addProduct(
+        productInventoryService.addProduct(
                 Electronics.builder()
                         .id("E-001")
                         .name("testElectronics")
@@ -105,7 +106,7 @@ public class ShopApp {
                         .build()
         );
 
-        productManager.addProduct(
+        productInventoryService.addProduct(
                 Smartphone.builder()
                         .id("S-001")
                         .name("testSmartphone")

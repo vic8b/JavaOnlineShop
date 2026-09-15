@@ -62,7 +62,7 @@ class OrderItemTest {
                 .unitPrice(BigDecimal.TEN)
                 .build();
 
-        assertThat(orderItem.getTotalPrice())
+        assertThat(orderItem.totalPrice())
                 .isEqualByComparingTo("20");
     }
 }

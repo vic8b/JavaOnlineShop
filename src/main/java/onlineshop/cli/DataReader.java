@@ -43,21 +43,4 @@ public class DataReader {
             }
         }
     }
-
-    public int getIntFromUser() {
-        while (true) {
-            try {
-                int userChoice = sc.nextInt();
-                sc.nextLine();
-                return userChoice;
-            } catch (InputMismatchException e) {
-                System.err.println("Enter a valid number");
-                sc.nextLine();
-            }
-        }
-    }
-
-    public String getStringFromUser() {
-        return sc.nextLine();
-    }
 }

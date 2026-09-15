@@ -21,8 +21,8 @@ class ProductPercentageDiscountTest {
         BigDecimal regularPrice = new BigDecimal("100.00");
 
         when(product.getId()).thenReturn(testProductId);
-        when(orderItem.getProduct()).thenReturn(product);
-        when(orderItem.getTotalPrice()).thenReturn(regularPrice);
+        when(orderItem.product()).thenReturn(product);
+        when(orderItem.totalPrice()).thenReturn(regularPrice);
 
         DiscountPolicy discountPolicy =
                 new ProductPercentageDiscount(testProductId, new BigDecimal("10"));
@@ -40,8 +40,8 @@ class ProductPercentageDiscountTest {
         BigDecimal regularPrice = new BigDecimal("100.00");
 
         when(product.getId()).thenReturn("P-002");
-        when(orderItem.getProduct()).thenReturn(product);
-        when(orderItem.getTotalPrice()).thenReturn(regularPrice);
+        when(orderItem.product()).thenReturn(product);
+        when(orderItem.totalPrice()).thenReturn(regularPrice);
 
         DiscountPolicy discountPolicy =
                 new ProductPercentageDiscount("P-001", new BigDecimal("10"));

@@ -1,6 +1,7 @@
 package onlineshop.repo;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import onlineshop.domain.useraccount.Account;
 import onlineshop.exception.AccountAlreadyExistsException;
 
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 public class InMemoryAccountRepository implements AccountRepository {
     private final Map<String, Account> accountRepo = new HashMap<>();
 
@@ -18,7 +20,7 @@ public class InMemoryAccountRepository implements AccountRepository {
             throw new AccountAlreadyExistsException(account.getAccountId());
         }
 
-        System.out.println("Account: " + account.getAccountId() + " has been added to the repository");
+        log.info("Account {} has been added to the repository", account.getAccountId());
     }
 
     @Override

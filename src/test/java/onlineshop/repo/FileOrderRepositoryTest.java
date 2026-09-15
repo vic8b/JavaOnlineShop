@@ -6,6 +6,7 @@ import onlineshop.domain.order.OrderStatus;
 import onlineshop.domain.product.Electronics;
 import onlineshop.domain.product.Product;
 import onlineshop.domain.useraccount.Account;
+import onlineshop.domain.useraccount.Email;
 import onlineshop.exception.OrderAlreadyExistsException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,7 +51,7 @@ class FileOrderRepositoryTest {
                 .accountId("1")
                 .firstName("John")
                 .lastName("Doe")
-                .email("john@example.com")
+                .email(new Email("john@gmail.com"))
                 .build();
 
 

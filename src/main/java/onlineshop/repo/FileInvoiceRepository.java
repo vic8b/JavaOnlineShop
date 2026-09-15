@@ -1,29 +1,30 @@
 package onlineshop.repo;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import onlineshop.domain.invoice.Invoice;
-import onlineshop.domain.order.Order;
 import onlineshop.exception.InvoiceAlreadyExistsException;
 import onlineshop.exception.InvoicePersistenceException;
+import onlineshop.repo.file.InvoiceFileSerializationService;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+@Slf4j
 public class FileInvoiceRepository implements InvoiceRepository {
     private final Map<UUID, Invoice> invoiceRepo = new ConcurrentHashMap<>();
     private final Path file;
-    private final OrderRepository orderRepository;
+    private final InvoiceFileSerializationService invoiceFileSerializationService;
 
     public FileInvoiceRepository(@NonNull Path file, @NonNull OrderRepository orderRepository) {
         this.file = file;
-        this.orderRepository = orderRepository;
+        this.invoiceFileSerializationService = new InvoiceFileSerializationService(orderRepository);
 
         initializeFile();
         loadInvoices();
@@ -31,13 +32,7 @@ public class FileInvoiceRepository implements InvoiceRepository {
 
     @Override
     public synchronized void add(@NonNull Invoice invoice) {
-        if (findByNumber(invoice.getInvoiceNumber()).isPresent()) {
-            throw InvoiceAlreadyExistsException.forNumber(invoice.getInvoiceNumber());
-        }
-
-        if (invoiceRepo.containsKey(invoice.getInvoiceId())) {
-            throw InvoiceAlreadyExistsException.forId(invoice.getInvoiceId());
-        }
+        validateIfInvoiceAlreadyExists(invoice);
 
         Map<UUID, Invoice> updatedInvoices = new HashMap<>(invoiceRepo);
         updatedInvoices.put(invoice.getInvoiceId(), invoice);
@@ -46,7 +41,7 @@ public class FileInvoiceRepository implements InvoiceRepository {
 
         invoiceRepo.put(invoice.getInvoiceId(), invoice);
 
-        System.out.println("Invoice: " + invoice.getInvoiceNumber() + " has been added to the repository");
+        log.info("Invoice: {} has been added to the repository", invoice.getInvoiceNumber());
     }
 
     @Override
@@ -73,6 +68,16 @@ public class FileInvoiceRepository implements InvoiceRepository {
         return List.copyOf(invoiceRepo.values());
     }
 
+    private void validateIfInvoiceAlreadyExists(Invoice invoice) {
+        if (findByNumber(invoice.getInvoiceNumber()).isPresent()) {
+            throw InvoiceAlreadyExistsException.forNumber(invoice.getInvoiceNumber());
+        }
+
+        if (invoiceRepo.containsKey(invoice.getInvoiceId())) {
+            throw InvoiceAlreadyExistsException.forId(invoice.getInvoiceId());
+        }
+    }
+
     private void initializeFile() {
         try {
             Path parent = file.getParent();
@@ -96,7 +101,7 @@ public class FileInvoiceRepository implements InvoiceRepository {
     private void loadInvoices() {
         try (Stream<String> lines = Files.lines(file, StandardCharsets.UTF_8)) {
             lines.filter(line -> !line.isBlank())
-                    .map(this::deserializeInvoice)
+                    .map(invoiceFileSerializationService::decode)
                     .forEach(this::addLoadedInvoice);
         } catch (IOException e) {
             throw new InvoicePersistenceException("Could not load invoices", e);
@@ -105,7 +110,7 @@ public class FileInvoiceRepository implements InvoiceRepository {
 
     private void saveAll(Map<UUID, Invoice> invoicesToSave) {
         List<String> lines = invoicesToSave.values().stream()
-                .map(this::serializeInvoice)
+                .map(invoiceFileSerializationService::encode)
                 .toList();
 
         try {
@@ -131,46 +136,5 @@ public class FileInvoiceRepository implements InvoiceRepository {
         }
 
         invoiceRepo.put(invoice.getInvoiceId(), invoice);
-    }
-
-    private String serializeInvoice(Invoice invoice) {
-        return String.join(
-                "|",
-                invoice.getInvoiceId().toString(),
-                invoice.getInvoiceNumber(),
-                invoice.getOrder().getOrderId().toString(),
-                invoice.getIssueDate().toString()
-        );
-    }
-
-    private Invoice deserializeInvoice(String invoiceLine) {
-        try {
-            String[] parts = invoiceLine.split("\\|", -1);
-
-            if (parts.length != 4) {
-                throw new InvoicePersistenceException("Invalid invoice record: " + invoiceLine);
-            }
-
-            UUID invoiceId = UUID.fromString(parts[0]);
-            String invoiceNumber = parts[1];
-            UUID orderId = UUID.fromString(parts[2]);
-            Instant invoiceIssueDate = Instant.parse(parts[3]);
-
-            Order order = orderRepository.findById(orderId)
-                    .orElseThrow(() -> new InvoicePersistenceException(
-                            "Order " + orderId + " referenced by invoice " + invoiceId + " does not exist"
-                    ));
-
-            return new Invoice(
-                    invoiceId,
-                    invoiceNumber,
-                    order,
-                    invoiceIssueDate
-            );
-        } catch (InvoicePersistenceException e) {
-            throw e;
-        } catch (RuntimeException e) {
-            throw new InvoicePersistenceException("Could not deserialize invoice: " + invoiceLine, e);
-        }
     }
 }
